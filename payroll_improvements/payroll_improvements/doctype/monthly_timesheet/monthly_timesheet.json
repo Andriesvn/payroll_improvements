@@ -1,0 +1,287 @@
+{
+ "creation": "2021-03-11 13:02:20.033493",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "timesheet_period",
+  "company",
+  "department",
+  "start_date",
+  "end_date",
+  "column_break_2",
+  "employee",
+  "employee_name",
+  "status",
+  "amended_from",
+  "section_break_9",
+  "required_hours",
+  "column_break_11",
+  "time_sheet_detail_section",
+  "monthly_time_sheet_detail",
+  "section_break_15",
+  "total_normal_hours",
+  "column_break_18",
+  "total_lunch_hours",
+  "column_break_17",
+  "total_overtime_hours",
+  "column_break_19",
+  "total_dot_hours",
+  "section_break_24",
+  "salary_slip"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fetch_from": "timesheet_period.company",
+   "fieldname": "company",
+   "fieldtype": "Read Only",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "no_copy": 1,
+   "options": "Employee",
+   "reqd": 1,
+   "search_index": 1,
+   "set_only_once": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1,
+   "width": "100%"
+  },
+  {
+   "columns": 1,
+   "fetch_from": "timesheet_period.date_from",
+   "fieldname": "start_date",
+   "fieldtype": "Read Only",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "timesheet_period.date_to",
+   "fieldname": "end_date",
+   "fieldtype": "Read Only",
+   "in_list_view": 1,
+   "label": "End Date",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Monthly Timesheet",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: cur_frm.doc.monthly_time_sheet_detail && cur_frm.doc.monthly_time_sheet_detail.length > 0",
+   "fieldname": "time_sheet_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Time Sheet Detail"
+  },
+  {
+   "fieldname": "monthly_time_sheet_detail",
+   "fieldtype": "Table",
+   "no_copy": 1,
+   "options": "Monthly Timesheet Detail"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Read Only",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Employee Name"
+  },
+  {
+   "depends_on": "eval: cur_frm.doc.monthly_time_sheet_detail && cur_frm.doc.monthly_time_sheet_detail.length > 0",
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "required_hours",
+   "fieldtype": "Float",
+   "label": "Required Hours",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval: cur_frm.doc.monthly_time_sheet_detail && cur_frm.doc.monthly_time_sheet_detail.length > 0",
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_normal_hours",
+   "fieldtype": "Float",
+   "label": "Total Normal Hours",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_overtime_hours",
+   "fieldtype": "Float",
+   "label": "Total Overtime",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_dot_hours",
+   "fieldtype": "Float",
+   "label": "Total Double Overtime",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Open\nApproved",
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_lunch_hours",
+   "fieldtype": "Float",
+   "label": "Total Lunch Hours",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "timesheet_period",
+   "fieldtype": "Link",
+   "label": "Timesheet Period",
+   "options": "Timesheet Period",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "depends_on": "eval: cur_frm.doc.salary_slip",
+   "fieldname": "section_break_24",
+   "fieldtype": "Section Break",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Link",
+   "label": "Salary Slip",
+   "no_copy": 1,
+   "options": "Salary Slip",
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2021-04-08 09:40:00",
+ "modified_by": "Administrator",
+ "module": "Payroll Improvements",
+ "name": "Monthly Timesheet",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Leave Approver",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "company,department,employee",
+ "show_name_in_global_search": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0
+}

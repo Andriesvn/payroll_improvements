@@ -1,0 +1,142 @@
+{
+ "creation": "2021-03-11 13:34:37.652344",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "checkin",
+  "checkout",
+  "lunch",
+  "normal_hours",
+  "overtime_hours",
+  "double_overtime_hours",
+  "leave",
+  "notes",
+  "column_break_10",
+  "is_approved",
+  "scheduled_off",
+  "is_night_shift",
+  "leave_status",
+  "leave_doc_status"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "default": "00:00",
+   "fieldname": "checkin",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Checkin Time"
+  },
+  {
+   "columns": 1,
+   "default": "00:00",
+   "fieldname": "checkout",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Checkout Time"
+  },
+  {
+   "columns": 1,
+   "default": "00:00",
+   "fieldname": "lunch",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Lunch"
+  },
+  {
+   "columns": 1,
+   "fieldname": "normal_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Normal Hours",
+   "precision": "2"
+  },
+  {
+   "columns": 1,
+   "fieldname": "overtime_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "OT Hours"
+  },
+  {
+   "columns": 1,
+   "fieldname": "double_overtime_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "DOT Hours"
+  },
+  {
+   "columns": 1,
+   "fieldname": "leave",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Leave Application",
+   "options": "Leave Application"
+  },
+  {
+   "columns": 2,
+   "fieldname": "notes",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Notes"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_approved",
+   "fieldtype": "Check",
+   "label": "Approved"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "scheduled_off",
+   "fieldtype": "Check",
+   "label": "Scheduled off"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_night_shift",
+   "fieldtype": "Check",
+   "label": "Night Shift"
+  },
+  {
+   "fetch_from": "leave.status",
+   "fieldname": "leave_status",
+   "fieldtype": "Read Only",
+   "hidden": 1,
+   "label": "Leave Status",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "leave.docstatus",
+   "fieldname": "leave_doc_status",
+   "fieldtype": "Read Only",
+   "hidden": 1,
+   "label": "Leave Doc Status",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-03-16 11:08:42.834641",
+ "modified_by": "Administrator",
+ "module": "Payroll Improvements",
+ "name": "Monthly Timesheet Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
