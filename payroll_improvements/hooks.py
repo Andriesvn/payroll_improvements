@@ -103,23 +103,23 @@ doctype_js = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
 # 	"all": [
 # 		"payroll_improvements.tasks.all"
 # 	],
 # 	"daily": [
 # 		"payroll_improvements.tasks.daily"
 # 	],
-# 	"hourly": [
-# 		"payroll_improvements.tasks.hourly"
-# 	],
+ 	"hourly": [
+ 		"payroll_improvements.utilities.zk_clocking_sheduler.import_employee_clockings_since_last_sync"
+ 	],
 # 	"weekly": [
 # 		"payroll_improvements.tasks.weekly"
 # 	]
 # 	"monthly": [
 # 		"payroll_improvements.tasks.monthly"
 # 	]
-# }
+}
 
 # Testing
 # -------

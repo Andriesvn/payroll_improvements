@@ -34,9 +34,12 @@ def get_employee_clockings_from_zk(pid,start_date,end_date):
     #print('Employee Clockings:',clockings)
     return clockings
 
-def insert_employee_checkins(clockings):
+def insert_employee_checkins(clockings, update_last_sync=False):
+    max_sync_id = 0
     for clocking in clockings:
         #print('Adding Clocking for ', clocking['employee'])
+        if clocking['id'] > max_sync_id:
+            max_sync_id = clocking['id']
         try:
             add_log_based_on_employee_field(
                 clocking['employee'],
@@ -47,8 +50,10 @@ def insert_employee_checkins(clockings):
             )
         except:
             pass
-
-    
+    #print('Max Sync ID ', max_sync_id)
+    if update_last_sync:
+        frappe.db.set_single_value('HR Settings', 'last_sync_id', max_sync_id)
+        #print('HR Settings Updated')
 
 
 def get_employees_clockings_from_zk(pids,start_date,end_date):
@@ -58,7 +63,7 @@ def get_employees_clockings_from_zk(pids,start_date,end_date):
     zkdb = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
     cursor = zkdb.cursor()
 
-    sql = "select pin, checktime, checktype, sn_name\
+    sql = "select id, pin, checktime, checktype, sn_name\
             from checkinout\
             where pin in (%s) and checktime>='%s' and checktime<='%s'\
             order by checktime" \
@@ -71,8 +76,11 @@ def get_employees_clockings_from_zk(pids,start_date,end_date):
         results = cursor.fetchall()
     except:
         frappe.msgprint(_("Unable to fetch data from Zk database. Server ran into a problem."), title=_('Zk Server Problem'))
-    # disconnect from server
-    zkdb.close()
+    
+    finally:
+        # disconnect from server
+        zkdb.close()
+    
     if (results != None):
         return normalize_zkdb_clockings(results)
     else:
@@ -91,6 +99,7 @@ def normalize_zkdb_clockings(rows):
                check_type = 'OUT'
         normalized_clockings.append(
             {
+                'id': row['id'],
                 'employee': pin,
                 'checktime': clocking_value,
                 'log_type' : check_type,
@@ -101,5 +110,93 @@ def normalize_zkdb_clockings(rows):
 
 def fix_zk_pin(pin):
     return pin.lstrip('0')
+
+def import_employee_clockings_since_last_sync():
+    # Get a list of employees 
+    employees = get_list_of_employee_pins()
+    if employees == None:
+        return
+    clockings = get_employees_clockings_from_zk_since_last_sync(employees)
+    if clockings == None:
+        return
+    insert_employee_checkins(clockings, update_last_sync=True)
+
+
+
+def get_list_of_employee_pins():
+    employees = []
+    employee_list = frappe.get_all('Employee', 'attendance_device_id', {'status': 'Active','attendance_device_id':("!=", "")}, as_list=True) 
+    for employee in employee_list:
+        employees.append(employee[0])
+    return employees
+
+def get_employees_clockings_from_zk_since_last_sync(pids):
+    hr_settings = frappe.get_single('HR Settings')
+    strPassword = hr_settings.get_password('zk_password')
+
+
+    if hr_settings.last_sync_id == None or hr_settings.last_sync_id.strip() == "":
+        #print('Getting Clockings Last Sync ID')
+        hr_settings.last_sync_id = get_lowest_sync_id_from_date(hr_settings, strPassword)
+        #hr_settings.last_sync_id = 3258936
+        if hr_settings.last_sync_id == None:
+            frappe.throw(_("Could not Determine the Sync ID to use"))
+    
+    #print('Last Sync ID to Use:',hr_settings.last_sync_id)
+    
+    #print('password=',strPassword)
+    zkdb = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
+    cursor = zkdb.cursor()
+
+    sql = "select id, pin, checktime, checktype, sn_name\
+            from checkinout\
+            where id > %s and pin in (%s)\
+            order by checktime" \
+            % (hr_settings.last_sync_id,','.join(pids),)
+    #print(sql)
+    results = None
+    try:
+        cursor.execute(sql)
+        # Fetch all the rows in a list of lists.
+        results = cursor.fetchall()
+    except:
+        frappe.msgprint(_("Unable to fetch data from Zk database. Server ran into a problem."), title=_('Zk Server Problem'))
+    
+    finally:
+        # disconnect from server
+        zkdb.close()
+    
+    if (results != None):
+        return normalize_zkdb_clockings(results)
+    else:
+        return None
+
+def get_lowest_sync_id_from_date(hr_settings, strPassword):
+    zkdb = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
+    cursor = zkdb.cursor()
+
+    sql = "select Max(id)\
+            from checkinout\
+            where checktime < '%s' \
+            " \
+            % (formatdate(hr_settings.import_after_date, 'yyyy-mm-dd'))
+    #print(sql)
+    results = None
+    try:
+        cursor.execute(sql)
+        # Fetch all the rows in a list of lists.
+        results = cursor.fetchall()
+    except:
+        frappe.msgprint(_("Unable to fetch data from Zk database. Server ran into a problem."), title=_('Zk Server Problem'))
+    
+    finally:
+        # disconnect from server
+        zkdb.close()
+    if (results != None):
+        return results[0]['Max(id)']
+    else:
+        return None
+
+
 
         
