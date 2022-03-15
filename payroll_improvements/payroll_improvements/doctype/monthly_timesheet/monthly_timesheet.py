@@ -144,13 +144,12 @@ class MonthlyTimesheet(Document):
 
 	
 		clockings = get_employees_clockings_from_zk([pid], self.start_date,self.end_date)
-		
 
 		if (clockings != None):
+			insert_employee_checkins(clockings)
 			self.fill_employee_clocking_results(clockings)
 		
 		self.save()
-		insert_employee_checkins(clockings)
 	
 	def fill_employee_clocking_results(self, rows):
 		previous_date = None
