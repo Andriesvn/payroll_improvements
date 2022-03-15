@@ -13,6 +13,7 @@ from dateutil import parser
 import numpy as np
 import pymysql
 import pymysql.cursors
+from payroll_improvements.utilities.zk_clocking_sheduler import insert_employee_clockings_from_zk_based_on_employee_field, get_employees_clockings_from_zk, insert_employee_checkins
 
 class MonthlyTimesheet(Document):
 	def autoname(self):
@@ -120,36 +121,36 @@ class MonthlyTimesheet(Document):
 	
 	@frappe.whitelist()
 	def get_employee_clockings(self):
-		# Get Leave Details
+
+		#insert_employee_clockings_from_zk_based_on_employee_field(self.employee,self.start_date,self.end_date)
+		#Get Leave Details
+		employee_fieldname='attendance_device_id'
+
 		self.get_leaves_for_period()
 
-		hr_settings = frappe.get_single('HR Settings')
-		strPassword = hr_settings.get_password('zk_password')
-		#print('password=',strPassword)
-		db = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
-		cursor = db.cursor()
+		employee = frappe.db.get_values("Employee", {'name': self.employee}, ["name", "employee_name", 'employee_number', employee_fieldname], as_dict=True)
+		if employee:
+			employee = employee[0]
+		else:
+			frappe.throw(_("Employee not found. 'name': {}").format(self.employee))
 
-		sql = "select pin, \
-				checktime\
-				from checkinout\
-				where pin = %s and checktime>='%s' and checktime<='%s'\
-				order by checktime" \
-				% (self.employee, formatdate(self.start_date, 'yyyy-mm-dd'),formatdate(self.end_date, 'yyyy-mm-dd'))
-		#print(sql)
-		results = None
-		try:
-			cursor.execute(sql)
-			# Fetch all the rows in a list of lists.
-			results = cursor.fetchall()
-		except:
-   			frappe.msgprint(_("Unable to fetch data. Server ran into a problem.")
-				.format(self.employee), title=_('Zk Server Problem'))
-		# disconnect from server
-		db.close()
-		if (results != None):
-			self.fill_employee_clocking_results(results)
+		#print('Employee Found:', employee)
+		pid = employee.get(employee_fieldname)
+		if pid == None or pid.strip() == "":
+			if employee.employee_number == None or employee.employee_number.strip() == "":
+				frappe.throw(_("Employee {} does not have an {} or an Employee Number assigned.").format(self.employee, employee_fieldname))
+			else:
+				pid = employee.employee_number
+
+	
+		clockings = get_employees_clockings_from_zk([pid], self.start_date,self.end_date)
+		
+
+		if (clockings != None):
+			self.fill_employee_clocking_results(clockings)
 		
 		self.save()
+		insert_employee_checkins(clockings)
 	
 	def fill_employee_clocking_results(self, rows):
 		previous_date = None
