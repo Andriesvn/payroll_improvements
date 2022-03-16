@@ -6,11 +6,10 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils.dateutils import get_dates_from_timegrain, parse_date
-from datetime import date, timedelta
-from frappe.utils.data import formatdate, getdate, get_datetime, get_time
+from frappe.utils.dateutils import get_dates_from_timegrain
+from datetime import timedelta
+from frappe.utils.data import getdate
 from dateutil import parser
-import numpy as np
 import itertools
 from erpnext.hr.doctype.employee_checkin.employee_checkin import (
 	calculate_working_hours,

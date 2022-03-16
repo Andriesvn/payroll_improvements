@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from locale import normalize
 import frappe
 from frappe import _
 from frappe.utils.data import formatdate
