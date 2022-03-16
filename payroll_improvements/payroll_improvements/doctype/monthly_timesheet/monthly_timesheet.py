@@ -135,7 +135,7 @@ class MonthlyTimesheet(Document):
 		#Get Checkins
 		filters = {
 			'time':('>=', self.start_date),
-			'time': ('<', self.end_date),
+			'time': ('<', getdate(self.end_date) + timedelta(days=1)),
 			'employee': self.employee
 		}
 		clockings = frappe.db.get_list('Employee Checkin', fields=["employee", "time"], filters=filters, order_by="time")
