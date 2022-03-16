@@ -227,10 +227,9 @@ class MonthlyTimesheet(Document):
 			if default_employee_holiday_list_name != None:
 				date_is_holiday = is_holiday(default_employee_holiday_list_name, parsed_date)
 			if shift != None:
-				detail.shift = shift.shift_type_name
-				shift_holiday_list_name = frappe.db.get_value('Shift Type', shift.shift_type_name, 'holiday_list')
-				if shift_holiday_list_name != None:
-					date_is_holiday = is_holiday(shift_holiday_list_name, parsed_date)
+				detail.shift = shift.shift_type.name
+				if shift.shift_type.holiday_list != None:
+					date_is_holiday = is_holiday(shift.shift_type.holiday_list, parsed_date)
 			detail.is_holiday = date_is_holiday
 			if detail.is_holiday == 1:
 				detail.attendance = 'Holiday'
