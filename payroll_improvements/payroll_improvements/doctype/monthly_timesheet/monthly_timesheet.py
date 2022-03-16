@@ -66,7 +66,7 @@ class MonthlyTimesheet(Document):
 				_("Overtime must have a reason. Overtime on {0} does not have a reason").format(row.date)
 				)
 	def not_missed_clocking(self, row):
-		if (row.checkin == row.checkout and row.checkin != '0:00:00') or (row.checkout == '0:00:00'):
+		if (row.checkin == row.checkout and row.checkin != '0:00:00') or (row.checkin != '0:00:00' and row.checkout == '0:00:00'):
 			frappe.throw(
 				_("Missed Clocking Found on {0}").format(row.date)
 				)
@@ -157,10 +157,10 @@ class MonthlyTimesheet(Document):
 			clocking_dates.append(key[1])
 			total_working_hours, in_time, out_time = calculate_working_hours(single_shift_logs, determine_check_in_and_check_out, working_hours_calculation_based_on)
 			break_time = 0
-			if total_working_hours > 0 and in_time != None and out_time != None:
+			if total_working_hours > 0 and in_time != None and out_time != None and len(single_shift_logs) >= 4 and len(single_shift_logs) % 2 == 0:
 				break_time = time_diff_in_hours(in_time, out_time) - total_working_hours
 			self.update_timesheet_clocking_row(in_time.date(), total_working_hours, in_time, out_time,break_time, single_shift_logs)
-		# After we added all of them, we can Check for missing days and mark attendance as well as shift
+		# After we added all of them, we can Check for missing days and mark attendance
 		#print('Clocking Dates=',clocking_dates)
 		# MARK MISSING DAYS ABSENT
 		self.mark_missing_dates_absent(clocking_dates)
@@ -184,16 +184,22 @@ class MonthlyTimesheet(Document):
 					detail.normal_hours = total_working_hours
 					detail.lunch = str(timedelta(hours=break_time))
 				detail.punch_times = ' , '.join(punch_times)
-				detail.attendance = self.get_employee_attendance_value(detail)
+				detail.attendance = self.get_employee_attendance_value(detail, punch_logs)
 				break
 	
-	def get_employee_attendance_value(self, detail):
+	def get_employee_attendance_value(self, detail, punch_logs):
 		if detail.leave != None and detail.leave.strip() != "":
 			return 'On Leave'
 		if detail.is_holiday == 1:
 			return 'Holiday'
-		if detail.normal_hours <= 0.2:
+		if len(punch_logs) != 0 and len(punch_logs) % 2 != 0:
+			return "Missed Clocking"
+		if detail.shift != None and detail.shift.strip() != "" \
+		and detail.is_holiday == False \
+		and (detail.leave == None or detail.leave.strip() == "")\
+		and (detail.checkin == None or detail.checkin == "00:00" or detail.checkin == "00:00:00" or len(punch_logs) == 0):
 			return 'Absent'
+
 		return 'Present'
 
 
@@ -219,7 +225,6 @@ class MonthlyTimesheet(Document):
 	
 	def fill_shifts_and_holidays_for_period(self):
 		default_employee_holiday_list_name = get_holiday_list_for_employee(self.employee, False)
-		
 		for detail in self.monthly_time_sheet_detail:
 			date_is_holiday = False
 			parsed_date = getdate(detail.date)
@@ -228,18 +233,19 @@ class MonthlyTimesheet(Document):
 				date_is_holiday = is_holiday(default_employee_holiday_list_name, parsed_date)
 			if shift != None:
 				detail.shift = shift.shift_type.name
-				if shift.shift_type.holiday_list != None:
+				if shift.shift_type.holiday_list != None and date_is_holiday == False:
 					date_is_holiday = is_holiday(shift.shift_type.holiday_list, parsed_date)
 			detail.is_holiday = date_is_holiday
-			if detail.is_holiday == 1:
+			if detail.is_holiday == True:
 				detail.attendance = 'Holiday'
 
 	def mark_missing_dates_absent(self, clocking_dates):
 		for detail in self.monthly_time_sheet_detail:
 			parsed_date = getdate(detail.date)
 			if not parsed_date in clocking_dates:
-				if detail.attendance == 'Present':
-					#print('No Clockings on', parsed_date.strftime("%d-%m-%Y"))
+				if detail.shift != None and detail.shift.strip() != "" \
+				and detail.is_holiday == False \
+				and (detail.leave == None or detail.leave.strip() == ""):
 					detail.attendance = 'Absent'
 			
 
