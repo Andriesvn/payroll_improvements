@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2021-03-11 13:02:20.033493",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -193,7 +194,7 @@
   {
    "fieldname": "total_lunch_hours",
    "fieldtype": "Float",
-   "label": "Total Lunch Hours",
+   "label": "Total Break Hours",
    "no_copy": 1,
    "precision": "2",
    "read_only": 1
@@ -204,6 +205,7 @@
    "fieldtype": "Link",
    "label": "Timesheet Period",
    "options": "Timesheet Period",
+   "read_only": 1,
    "reqd": 1,
    "search_index": 1
   },
@@ -223,7 +225,8 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2021-04-08 09:40:00",
+ "links": [],
+ "modified": "2022-03-16 15:54:49.941371",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Monthly Timesheet",
@@ -282,6 +285,5 @@
  "search_fields": "company,department,employee",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
- "sort_order": "DESC",
- "track_changes": 0
+ "sort_order": "DESC"
 }
