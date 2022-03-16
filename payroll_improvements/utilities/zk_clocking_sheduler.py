@@ -127,11 +127,11 @@ def fix_zk_pin(pin):
 def import_employee_clockings_since_last_sync():
     # Get a list of employees 
     employees = get_list_of_employee_pins()
-    if employees == None:
+    if employees == None or len(employees) == 0:
         return
     clockings ,last_sync_id = get_employees_clockings_from_zk_since_last_sync(employees)
     #print('Recieved Last sync back from get_employees_clockings:',last_sync_id)
-    if clockings == None:
+    if clockings == None or len(clockings) == 0:
         return
     insert_employee_checkins(clockings, update_last_sync=True, last_sync_id=last_sync_id)
 
@@ -146,8 +146,16 @@ def get_list_of_employee_pins():
 
 def get_employees_clockings_from_zk_since_last_sync(pids):
     hr_settings = frappe.get_single('HR Settings')
-    strPassword = hr_settings.get_password('zk_password')
+    
+    # Return if no settings defined
+    if hr_settings.zk_host == None or hr_settings.zk_host.strip() == "" \
+        or hr_settings.zk_database == None or hr_settings.zk_database.strip() == "" \
+        or hr_settings.zk_user == None or hr_settings.zk_user.strip() == "":
+        return None, None
 
+    strPassword = hr_settings.get_password('zk_password')
+    if strPassword == None or strPassword.strip() == "":
+         frappe.throw(_("ZK Password not Set"))
 
     if hr_settings.last_sync_id == None or hr_settings.last_sync_id.strip() == "" or hr_settings.last_sync_id.strip() == "0" or hr_settings.last_sync_id == 0:
         #print('Getting Clockings Last Sync ID')
@@ -183,7 +191,7 @@ def get_employees_clockings_from_zk_since_last_sync(pids):
     if (results != None):
         return normalize_zkdb_clockings(results), hr_settings.last_sync_id
     else:
-        return None
+        return None, None
 
 def get_lowest_sync_id_from_date(hr_settings, strPassword):
     zkdb = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
