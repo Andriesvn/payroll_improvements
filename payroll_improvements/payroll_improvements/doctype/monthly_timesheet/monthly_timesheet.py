@@ -12,7 +12,6 @@ from frappe.utils.data import getdate
 from dateutil import parser
 import itertools
 from erpnext.hr.doctype.employee_checkin.employee_checkin import (
-	calculate_working_hours,
 	time_diff_in_hours,
 )
 from erpnext.hr.doctype.shift_assignment.shift_assignment import (
@@ -147,18 +146,13 @@ class MonthlyTimesheet(Document):
 
 	
 	def fill_employee_clocking_results(self, rows):
-		determine_check_in_and_check_out ='Alternating entries as IN and OUT during the same shift'
-		working_hours_calculation_based_on = 'Every Valid Check-in and Check-out'
 
 		clocking_dates = []
 
 		for key, group in itertools.groupby(rows, key=lambda x: (x['employee'], x['time'].date())):
 			single_shift_logs = list(group)
 			clocking_dates.append(key[1])
-			total_working_hours, in_time, out_time = calculate_working_hours(single_shift_logs, determine_check_in_and_check_out, working_hours_calculation_based_on)
-			break_time = 0
-			if total_working_hours > 0 and in_time != None and out_time != None and len(single_shift_logs) >= 4 and len(single_shift_logs) % 2 == 0:
-				break_time = time_diff_in_hours(in_time, out_time) - total_working_hours
+			total_working_hours, in_time, out_time, break_time = self.calculate_working_hours(single_shift_logs)
 			self.update_timesheet_clocking_row(in_time.date(), total_working_hours, in_time, out_time,break_time, single_shift_logs)
 		# After we added all of them, we can Check for missing days and mark attendance
 		#print('Clocking Dates=',clocking_dates)
@@ -233,6 +227,7 @@ class MonthlyTimesheet(Document):
 				date_is_holiday = is_holiday(default_employee_holiday_list_name, parsed_date)
 			if shift != None:
 				detail.shift = shift.shift_type.name
+				detail._shift = shift.shift_type
 				if shift.shift_type.holiday_list != None and date_is_holiday == False:
 					date_is_holiday = is_holiday(shift.shift_type.holiday_list, parsed_date)
 			detail.is_holiday = date_is_holiday
@@ -247,6 +242,27 @@ class MonthlyTimesheet(Document):
 				and detail.is_holiday == False \
 				and (detail.leave == None or detail.leave.strip() == ""):
 					detail.attendance = 'Absent'
+
+	def calculate_working_hours(self, logs):
+		total_hours = 0
+		in_time = out_time = None
+		in_time = logs[0].time
+		break_time = 0
+		if len(logs) >= 2:
+			out_time = logs[-1].time
+		# If we find irregular Clockins then use First Check-in and Last Check-out
+		if len(logs) >= 2 and len(logs) % 2 != 0:
+			# assumption in this case: First log always taken as IN, Last log always taken as OUT
+			total_hours = time_diff_in_hours(in_time, logs[-1].time)
+		# If We find good Clockins then Every Valid Check-in and Check-out
+		elif len(logs) >= 2 and len(logs) % 2 == 0:
+			logs = logs[:]
+			while len(logs) >= 2:
+				total_hours += time_diff_in_hours(logs[0].time, logs[1].time)
+				del logs[:2]
+			break_time = time_diff_in_hours(in_time, out_time) - total_hours
+		return total_hours, in_time, out_time, break_time
 			
 
-
+def find_index_in_dict(dict_list, key, value):
+	return next((index for (index, d) in enumerate(dict_list) if d[key] == value), None)
