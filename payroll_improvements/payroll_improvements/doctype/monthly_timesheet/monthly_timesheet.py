@@ -11,9 +11,17 @@ from datetime import date, timedelta
 from frappe.utils.data import formatdate, getdate, get_datetime, get_time
 from dateutil import parser
 import numpy as np
-import pymysql
-import pymysql.cursors
-from payroll_improvements.utilities.zk_clocking_sheduler import insert_employee_clockings_from_zk_based_on_employee_field, get_employees_clockings_from_zk, insert_employee_checkins
+import itertools
+from erpnext.hr.doctype.employee_checkin.employee_checkin import (
+	calculate_working_hours,
+	time_diff_in_hours,
+)
+from erpnext.hr.doctype.shift_assignment.shift_assignment import (
+	get_employee_shift,
+)
+from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
+from erpnext.hr.doctype.holiday_list.holiday_list import is_holiday
+
 
 class MonthlyTimesheet(Document):
 	def autoname(self):
@@ -59,7 +67,7 @@ class MonthlyTimesheet(Document):
 				_("Overtime must have a reason. Overtime on {0} does not have a reason").format(row.date)
 				)
 	def not_missed_clocking(self, row):
-		if (row.checkin == row.checkout and row.checkin != '0:00:00'):
+		if (row.checkin == row.checkout and row.checkin != '0:00:00') or (row.checkout == '0:00:00'):
 			frappe.throw(
 				_("Missed Clocking Found on {0}").format(row.date)
 				)
@@ -121,64 +129,74 @@ class MonthlyTimesheet(Document):
 	
 	@frappe.whitelist()
 	def get_employee_clockings(self):
-
-		#insert_employee_clockings_from_zk_based_on_employee_field(self.employee,self.start_date,self.end_date)
 		#Get Leave Details
-		employee_fieldname='attendance_device_id'
-
 		self.get_leaves_for_period()
-
-		employee = frappe.db.get_values("Employee", {'name': self.employee}, ["name", "employee_name", 'employee_number', employee_fieldname], as_dict=True)
-		if employee:
-			employee = employee[0]
-		else:
-			frappe.throw(_("Employee not found. 'name': {}").format(self.employee))
-
-		#print('Employee Found:', employee)
-		pid = employee.get(employee_fieldname)
-		if pid == None or pid.strip() == "":
-			if employee.employee_number == None or employee.employee_number.strip() == "":
-				frappe.throw(_("Employee {} does not have an {} or an Employee Number assigned.").format(self.employee, employee_fieldname))
-			else:
-				pid = employee.employee_number
-
-	
-		clockings = get_employees_clockings_from_zk([pid], self.start_date,self.end_date)
+		#Get Holidays
+		self.fill_shifts_and_holidays_for_period()
+		#Get Checkins
+		filters = {
+			'time':('>=', self.start_date),
+			'time': ('<', self.end_date),
+			'employee': self.employee
+		}
+		clockings = frappe.db.get_list('Employee Checkin', fields=["employee", "time"], filters=filters, order_by="time")
 
 		if (clockings != None):
-			insert_employee_checkins(clockings)
+			#insert_employee_checkins(clockings)
 			self.fill_employee_clocking_results(clockings)
-		
-		self.save()
+			self.save()
+
 	
 	def fill_employee_clocking_results(self, rows):
-		previous_date = None
-		min_time = None
-		max_time = None
-		for row in rows:
-			clocking_value = row['checktime']
-			parsed_date = clocking_value.date()
-			if (parsed_date != previous_date):
-				if (previous_date != None):
-					self.update_timesheet_clocking_row(parsed_date, min_time, max_time)
-				previous_date = parsed_date
-				min_time = clocking_value
-				max_time = clocking_value
-			else:
-				if clocking_value < min_time:
-					min_time = clocking_value
-				if clocking_value > max_time:
-					max_time = clocking_value
+		determine_check_in_and_check_out ='Alternating entries as IN and OUT during the same shift'
+		working_hours_calculation_based_on = 'Every Valid Check-in and Check-out'
+
+		clocking_dates = []
+
+		for key, group in itertools.groupby(rows, key=lambda x: (x['employee'], x['time'].date())):
+			single_shift_logs = list(group)
+			clocking_dates.append(key[1])
+			total_working_hours, in_time, out_time = calculate_working_hours(single_shift_logs, determine_check_in_and_check_out, working_hours_calculation_based_on)
+			break_time = 0
+			if total_working_hours > 0 and in_time != None and out_time != None:
+				break_time = time_diff_in_hours(in_time, out_time) - total_working_hours
+			self.update_timesheet_clocking_row(in_time.date(), total_working_hours, in_time, out_time,break_time, single_shift_logs)
+		# After we added all of them, we can Check for missing days and mark attendance as well as shift
+		#print('Clocking Dates=',clocking_dates)
+		# MARK MISSING DAYS ABSENT
+		self.mark_missing_dates_absent(clocking_dates)
 	
-	def update_timesheet_clocking_row(self, _date, min, max):
+	def update_timesheet_clocking_row(self, _date, total_working_hours, in_time, out_time,break_time, punch_logs):
+		punch_times = []
+		for clocking in punch_logs:
+			punch_times.append(clocking.time.strftime("%d-%m-%Y %H:%M:%S"))
+ 
+
 		for detail in self.monthly_time_sheet_detail:
 			parsed_date = getdate(detail.date)
 			if parsed_date == _date :
+				# Calculate Attendance
 				if (detail.is_approved == 0):
-					detail.checkin = min.strftime('%H:%M:%S')
-					detail.checkout = max.strftime('%H:%M:%S')
-					detail.normal_hours = round(float((max - min).total_seconds()) / 3600, 6)
+					detail.checkin = in_time.strftime('%H:%M:%S')
+					if out_time != None:
+						detail.checkout = out_time.strftime('%H:%M:%S')
+					else:
+						detail.checkout = "00:00"
+					detail.normal_hours = total_working_hours
+					detail.lunch = str(timedelta(hours=break_time))
+				detail.punch_times = ' , '.join(punch_times)
+				detail.attendance = self.get_employee_attendance_value(detail)
 				break
+	
+	def get_employee_attendance_value(self, detail):
+		if detail.leave != None and detail.leave.strip() != "":
+			return 'On Leave'
+		if detail.is_holiday == 1:
+			return 'Holiday'
+		if detail.normal_hours <= 0.2:
+			return 'Absent'
+		return 'Present'
+
 
 	def get_leaves_for_period(self):
 		leaves = frappe.db.get_all('Leave Application',filters={
@@ -195,11 +213,36 @@ class MonthlyTimesheet(Document):
 				parsed_date = getdate(detail.date)
 				for leave in leaves:
 					if leave['from_date'] <= parsed_date <= leave['to_date']:
+						detail.attendance = 'On Leave'
 						if detail.leave != leave.name:
 							detail.leave = leave.name
 						break
+	
+	def fill_shifts_and_holidays_for_period(self):
+		default_employee_holiday_list_name = get_holiday_list_for_employee(self.employee, False)
 		
-		
+		for detail in self.monthly_time_sheet_detail:
+			date_is_holiday = False
+			parsed_date = getdate(detail.date)
+			shift = get_employee_shift(self.employee, for_date=parsed_date, consider_default_shift=True)
+			if default_employee_holiday_list_name != None:
+				date_is_holiday = is_holiday(default_employee_holiday_list_name, parsed_date)
+			if shift != None:
+				detail.shift = shift.shift_type_name
+				shift_holiday_list_name = frappe.db.get_value('Shift Type', shift.shift_type_name, 'holiday_list')
+				if shift_holiday_list_name != None:
+					date_is_holiday = is_holiday(shift_holiday_list_name, parsed_date)
+			detail.is_holiday = date_is_holiday
+			if detail.is_holiday == 1:
+				detail.attendance = 'Holiday'
+
+	def mark_missing_dates_absent(self, clocking_dates):
+		for detail in self.monthly_time_sheet_detail:
+			parsed_date = getdate(detail.date)
+			if not parsed_date in clocking_dates:
+				if detail.attendance == 'Present':
+					#print('No Clockings on', parsed_date.strftime("%d-%m-%Y"))
+					detail.attendance = 'Absent'
+			
 
 
-		

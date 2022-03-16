@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2021-03-11 13:34:37.652344",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -12,13 +13,22 @@
   "overtime_hours",
   "double_overtime_hours",
   "leave",
-  "notes",
+  "attendance",
   "column_break_10",
+  "notes",
   "is_approved",
-  "scheduled_off",
-  "is_night_shift",
   "leave_status",
-  "leave_doc_status"
+  "leave_doc_status",
+  "shift_details_section",
+  "shift",
+  "required_hours",
+  "max_break",
+  "column_break_19",
+  "late_entry",
+  "early_exit",
+  "is_holiday",
+  "section_break_22",
+  "punch_times"
  ],
  "fields": [
   {
@@ -101,18 +111,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "0",
-   "fieldname": "scheduled_off",
-   "fieldtype": "Check",
-   "label": "Scheduled off"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_night_shift",
-   "fieldtype": "Check",
-   "label": "Night Shift"
-  },
-  {
    "fetch_from": "leave.status",
    "fieldname": "leave_status",
    "fieldtype": "Read Only",
@@ -127,10 +125,81 @@
    "hidden": 1,
    "label": "Leave Doc Status",
    "read_only": 1
+  },
+  {
+   "default": "Present",
+   "fieldname": "attendance",
+   "fieldtype": "Select",
+   "label": "Attendance Status",
+   "options": "\nPresent\nAbsent\nOn Leave\nHalf Day\nHoliday",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shift_details_section",
+   "fieldtype": "Section Break",
+   "label": "Shift Details"
+  },
+  {
+   "fieldname": "shift",
+   "fieldtype": "Link",
+   "label": "Shift",
+   "options": "Shift Type",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "required_hours",
+   "fieldtype": "Float",
+   "label": "Required Hours",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "max_break",
+   "fieldtype": "Float",
+   "label": "Max Break",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "late_entry",
+   "fieldtype": "Check",
+   "label": "Late Entry",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "early_exit",
+   "fieldtype": "Check",
+   "label": "Early Exit",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_holiday",
+   "fieldtype": "Check",
+   "label": "Is Holiday",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_22",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "punch_times",
+   "fieldtype": "Data",
+   "label": "Punch Times",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
   }
  ],
  "istable": 1,
- "modified": "2021-03-16 11:08:42.834641",
+ "links": [],
+ "modified": "2022-03-16 14:21:19.750535",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Monthly Timesheet Detail",

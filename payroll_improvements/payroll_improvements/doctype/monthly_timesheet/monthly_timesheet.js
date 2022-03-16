@@ -61,7 +61,7 @@ frappe.ui.form.on('Monthly Timesheet', {
 	draw_on_table: function(frm){
 		frm.fields_dict["monthly_time_sheet_detail"].$wrapper.find('.grid-body .rows').find(".grid-row").each(function(i, item) {
 			let d = locals[frm.fields_dict["monthly_time_sheet_detail"].grid.doctype][$(item).attr('data-name')];
-			if (moment(d.date).day() == 0){
+			if (d.is_holiday == 1){
 				$(item).find('.data-row').css({'border':'1px solid #aaddff'})
 				$(item).find('.row-index').css({'background-color': '#aaddff'});
 			}
@@ -73,6 +73,17 @@ frappe.ui.form.on('Monthly Timesheet', {
 			if (d.leave){
 				if (d.leave_doc_status == 0 || d.leave_status != 'Approved'){
 					$(item).find("[data-fieldname='leave']").css({'background-color': '#ffa00a'});
+				}
+			}
+			if (d.attendance){
+				if (["Present", "Work From Home"].includes(d.attendance)){
+					$(item).find("[data-fieldname='attendance']").css({'background-color': '#adffaa'});
+				} else if (["Absent"].includes(d.attendance)){
+					$(item).find("[data-fieldname='attendance']").css({'background-color': '#ff5858'});
+				} else if (["Half Day", "On Leave"].includes(d.attendance)){
+					$(item).find("[data-fieldname='attendance']").css({'background-color': '#ffa00a'});
+				} else if (d.attendance == "Holiday"){
+					$(item).find("[data-fieldname='attendance']").css({'background-color': '#aaddff'});
 				}
 			}
 			if (d.lunch){
@@ -95,10 +106,12 @@ frappe.ui.form.on('Monthly Timesheet', {
 					}
 				}
 			}
-			if ( (d.checkin == d.checkout) && (d.checkin != '0:00:00' && d.checkin != '00:00') ){
+			if (( (d.checkin == d.checkout) && (d.checkin != '0:00:00' && d.checkin != '00:00') ) || 
+			   ( (d.checkin != '0:00:00' && d.checkin != '00:00') && (d.checkout == '0:00:00' || d.checkout == '00:00'))) {
 					$(item).find("[data-fieldname='checkin']").css({'background-color': '#ff5858'});
 					$(item).find("[data-fieldname='checkout']").css({'background-color': '#ff5858'});
 			}
+
 		});
 	},
 	monthly_time_sheet_detail_on_form_rendered: function(frm, cdt, cdn){
