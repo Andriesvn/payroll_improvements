@@ -34,24 +34,37 @@ def get_employee_clockings_from_zk(pid,start_date,end_date):
     #print('Employee Clockings:',clockings)
     return clockings
 
-def insert_employee_checkins(clockings, update_last_sync=False):
+def insert_employee_checkins(clockings, update_last_sync=False, last_sync_id=0):
     max_sync_id = 0
+    #make sure last sync is a number not a string
+    if last_sync_id != None and isinstance(last_sync_id, str):
+        if last_sync_id.isnumeric():
+           try:
+               last_sync_id = int(last_sync_id)
+           except:
+               last_sync_id = 0
+        else:
+            last_sync_id = 0
+    
+
     for clocking in clockings:
         #print('Adding Clocking for ', clocking['employee'])
         if clocking['id'] > max_sync_id:
             max_sync_id = clocking['id']
-        try:
-            add_log_based_on_employee_field(
-                clocking['employee'],
-                clocking['checktime'],
-                clocking['device'],
-                clocking['log_type'],
-                skip_auto_attendance=0
-            )
-        except:
-            pass
+        #extra bit of protection to try to prevent duplicates
+        if clocking['id'] > last_sync_id:
+            try:
+                add_log_based_on_employee_field(
+                    clocking['employee'],
+                    clocking['checktime'],
+                    clocking['device'],
+                    clocking['log_type'],
+                    skip_auto_attendance=0
+                )
+            except:
+                pass
     #print('Max Sync ID ', max_sync_id)
-    if update_last_sync:
+    if update_last_sync and max_sync_id > last_sync_id:
         frappe.db.set_single_value('HR Settings', 'last_sync_id', max_sync_id)
         #print('HR Settings Updated')
 
@@ -116,10 +129,11 @@ def import_employee_clockings_since_last_sync():
     employees = get_list_of_employee_pins()
     if employees == None:
         return
-    clockings = get_employees_clockings_from_zk_since_last_sync(employees)
+    clockings ,last_sync_id = get_employees_clockings_from_zk_since_last_sync(employees)
+    #print('Recieved Last sync back from get_employees_clockings:',last_sync_id)
     if clockings == None:
         return
-    insert_employee_checkins(clockings, update_last_sync=True)
+    insert_employee_checkins(clockings, update_last_sync=True, last_sync_id=last_sync_id)
 
 
 
@@ -135,7 +149,7 @@ def get_employees_clockings_from_zk_since_last_sync(pids):
     strPassword = hr_settings.get_password('zk_password')
 
 
-    if hr_settings.last_sync_id == None or hr_settings.last_sync_id.strip() == "":
+    if hr_settings.last_sync_id == None or hr_settings.last_sync_id.strip() == "" or hr_settings.last_sync_id.strip() == "0" or hr_settings.last_sync_id == 0:
         #print('Getting Clockings Last Sync ID')
         hr_settings.last_sync_id = get_lowest_sync_id_from_date(hr_settings, strPassword)
         #hr_settings.last_sync_id = 3258936
@@ -167,7 +181,7 @@ def get_employees_clockings_from_zk_since_last_sync(pids):
         zkdb.close()
     
     if (results != None):
-        return normalize_zkdb_clockings(results)
+        return normalize_zkdb_clockings(results), hr_settings.last_sync_id
     else:
         return None
 
