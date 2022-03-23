@@ -54,7 +54,7 @@ class TimesheetPeriod(Document):
 
 def insert_employee_timesheets(employees, args, publish_progress=True):
 	existing_timesheets = get_existing_timesheets(args)
-	print("existing timesheets:", existing_timesheets)
+	#print("existing timesheets:", existing_timesheets)
 	count=0
 	for emp in employees:
 		if emp not in existing_timesheets:
@@ -63,7 +63,7 @@ def insert_employee_timesheets(employees, args, publish_progress=True):
 				"employee": emp
 			})
 			ss = frappe.get_doc(args)
-			print('Creating Timesheet for ', emp)
+			#print('Creating Timesheet for ', emp)
 			ss.insert()
 			count+=1
 			if publish_progress:
