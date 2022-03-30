@@ -15,19 +15,18 @@
   "employee_name",
   "status",
   "amended_from",
-  "section_break_9",
-  "required_hours",
-  "column_break_11",
   "time_sheet_detail_section",
   "monthly_time_sheet_detail",
   "section_break_15",
-  "total_normal_hours",
+  "total_approved_hours",
   "column_break_18",
-  "total_lunch_hours",
+  "total_break_hours",
   "column_break_17",
   "total_overtime_hours",
   "column_break_19",
   "total_dot_hours",
+  "column_break_21",
+  "total_public_hours",
   "section_break_24",
   "salary_slip"
  ],
@@ -124,33 +123,9 @@
   },
   {
    "depends_on": "eval: cur_frm.doc.monthly_time_sheet_detail && cur_frm.doc.monthly_time_sheet_detail.length > 0",
-   "fieldname": "section_break_9",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "required_hours",
-   "fieldtype": "Float",
-   "label": "Required Hours",
-   "no_copy": 1,
-   "precision": "2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_11",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval: cur_frm.doc.monthly_time_sheet_detail && cur_frm.doc.monthly_time_sheet_detail.length > 0",
    "fieldname": "section_break_15",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "total_normal_hours",
-   "fieldtype": "Float",
-   "label": "Total Normal Hours",
-   "no_copy": 1,
-   "precision": "2",
-   "read_only": 1
+   "fieldtype": "Section Break",
+   "label": "Totals"
   },
   {
    "fieldname": "column_break_17",
@@ -192,14 +167,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "total_lunch_hours",
-   "fieldtype": "Float",
-   "label": "Total Break Hours",
-   "no_copy": 1,
-   "precision": "2",
-   "read_only": 1
-  },
-  {
    "allow_in_quick_entry": 1,
    "fieldname": "timesheet_period",
    "fieldtype": "Link",
@@ -222,11 +189,38 @@
    "no_copy": 1,
    "options": "Salary Slip",
    "read_only": 1
+  },
+  {
+   "fieldname": "total_approved_hours",
+   "fieldtype": "Float",
+   "label": "Total Approved Hours",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_break_hours",
+   "fieldtype": "Float",
+   "label": "Total Break Hours",
+   "no_copy": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_public_hours",
+   "fieldtype": "Float",
+   "label": "Total Public Hours",
+   "precision": "2",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2022-03-16 15:54:49.941371",
+ "modified": "2022-03-23 14:12:14.320143",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Monthly Timesheet",

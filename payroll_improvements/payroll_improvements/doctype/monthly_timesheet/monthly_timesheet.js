@@ -1,7 +1,7 @@
 // Copyright (c) 2021, AvN Technologies and contributors
 // For license information, please see license.txt
 
-frappe.provide("erpnext_wb_hr.woermann_hr.weekly_timesheet");
+//frappe.provide("erpnext_wb_hr.woermann_hr.weekly_timesheet");
 
 frappe.ui.form.on('Monthly Timesheet', {
 	refresh: function(frm) {
@@ -61,7 +61,7 @@ frappe.ui.form.on('Monthly Timesheet', {
 	draw_on_table: function(frm){
 		frm.fields_dict["monthly_time_sheet_detail"].$wrapper.find('.grid-body .rows').find(".grid-row").each(function(i, item) {
 			let d = locals[frm.fields_dict["monthly_time_sheet_detail"].grid.doctype][$(item).attr('data-name')];
-			if (d.is_holiday == 1){
+			if (d.is_holiday == 1 || d.is_not_working == 1){
 				$(item).find('.data-row').css({'border':'1px solid #aaddff'})
 				$(item).find('.row-index').css({'background-color': '#aaddff'});
 			}
@@ -82,29 +82,24 @@ frappe.ui.form.on('Monthly Timesheet', {
 					$(item).find("[data-fieldname='attendance']").css({'background-color': '#ff5858'});
 				} else if (["Half Day", "On Leave"].includes(d.attendance)){
 					$(item).find("[data-fieldname='attendance']").css({'background-color': '#ffa00a'});
-				} else if (d.attendance == "Holiday"){
+				} else if (["Public Holiday", "Not Working"].includes(d.attendance) ){
 					$(item).find("[data-fieldname='attendance']").css({'background-color': '#aaddff'});
 				}
 			}
-			if (d.lunch){
-				var lunch = moment(d.lunch,"HH:mm")
-				if (lunch.isValid()){
-					let dec_lunch = lunch.hours() + (lunch.minutes() / 60);
-					if (dec_lunch > 1.05){
-						$(item).find("[data-fieldname='lunch']").css({'background-color': '#ffa00a'});
-					}	
-				}
+			if (d.approved_hours > d.actual_hours){
+				$(item).find("[data-fieldname='approved_hours']").css({'background-color': '#ff5858'});
 			}
-			if ( (d.overtime_hours > 0 || d.double_overtime_hours > 0)){
+			if (d.exceeded_break_time || d.unallowed_break){
+				$(item).find("[data-fieldname='breaks']").css({'background-color': '#ffa00a'});
+			}
+			if ( d.approved_hours > d.shift_required_hours && (d.overtime_hours > 0 || d.double_overtime_hours > 0)){
 				if (!d.notes){
 					$(item).find("[data-fieldname='notes']").css({'background-color': '#ff5858'});
-					if (d.overtime_hours > 0) {
-						$(item).find("[data-fieldname='overtime_hours']").css({'background-color': '#ff5858'});
-					}
-					if (d.double_overtime_hours > 0) {
-						$(item).find("[data-fieldname='double_overtime_hours']").css({'background-color': '#ff5858'});
-					}
 				}
+			}
+			if (d.has_manual_checkin) {
+				$(item).find("[data-fieldname='checkin']").css({'background-color': '#ffa00a'});
+				$(item).find("[data-fieldname='checkout']").css({'background-color': '#ffa00a'});
 			}
 			if (( (d.checkin == d.checkout) && (d.checkin != '0:00:00' && d.checkin != '00:00') ) || 
 			   ( (d.checkin != '0:00:00' && d.checkin != '00:00') && (d.checkout == '0:00:00' || d.checkout == '00:00')) ||
@@ -134,7 +129,79 @@ frappe.ui.form.on('Monthly Timesheet', {
 			freeze_message: __("Getting Employee Clockings...")
 		})
 	},
+	add_manual_checkin: function(frm,detail) {
+		console.log('adding Manual Checkin for detail:',detail);
+		var dialog = new frappe.ui.Dialog({
+			title: __('Add Manual Check-in'),
+			fields: [
+				{
+					label: __('Date'),
+					fieldname: 'date',
+					fieldtype: 'Date',
+					default: detail.date,
+					read_only:1,
+				},
+				{
+					label: __('Log Type'),
+					fieldname: 'log_type',
+					fieldtype: 'Select',
+					options: "IN\nOUT",
+					default: "IN",
+					reqd: 1,
+				},
 
+				{fieldtype: 'Column Break',},
+				{
+					label: __('Time'),
+					fieldname: 'time',
+					fieldtype: 'Time',
+					reqd: 1,
+				},
+				{
+					label: __('Reason'),
+					fieldname: 'reason',
+					fieldtype: 'Data',
+					reqd: 1
+				}
+			],
+			primary_action_label: __('Submit'),
+			primary_action(values) {
+				console.log(values);
+				frappe.call({
+					doc: frm.doc,
+					method: 'add_manual_checkin',
+					args: {
+						date: values.date,
+						time: values.time,
+						log_type: values.log_type,
+						reason: values.reason,
+					},
+					callback: function(r) {
+						dialog.hide();
+						frm.reload_doc();
+					},
+					freeze: true,
+					freeze_message: __("Adding Manual Check-in")
+				})
+			}
+		});
+		dialog.set_value("date", detail.date);
+		dialog.show();
+	},
+	update_timesheet_detail: function(frm,detail){
+		console.log('Timesheet Detail:', detail)
+		frappe.call({
+			doc: frm.doc,
+			method: 'update_timesheet_detail_from_ui',
+			args: {
+				row_name: detail.name,
+			},
+			callback: function(r) {
+				frm.reload_doc();
+			},
+			freeze: true,
+		})
+	},
 });
 
 frappe.ui.form.on('Monthly Timesheet Detail', {
@@ -142,30 +209,27 @@ frappe.ui.form.on('Monthly Timesheet Detail', {
     // cdn is the row name for e.g bbfcb8da6a
 	refresh: function(frm) {
 	},
-    is_approved(frm) {
-        frm.trigger("draw_on_table");
+    is_approved(frm, cdt, cdn) {
+		var d = locals[cdt][cdn]; 
+		frm.events.update_timesheet_detail(frm,d);
     },
-	leave(frm) {
-        frm.trigger("draw_on_table");
-    },
-	overtime_hours(frm) {
-        frm.trigger("draw_on_table");
-    },
-	double_overtime_hours(frm) {
-        frm.trigger("draw_on_table");
+	leave(frm, cdt, cdn) {
+        var d = locals[cdt][cdn]; 
+		frm.events.update_timesheet_detail(frm,d);
     },
 	notes(frm) {
         frm.trigger("draw_on_table");
     },
-	lunch(frm) {
-        frm.trigger("draw_on_table");
-    },
-	checkin(frm) {
-        frm.trigger("draw_on_table");
-		//AND RECALCULATE NORMAL HOURS
-    },
-	checkout(frm) {
-        frm.trigger("draw_on_table");
-		//AND RECALCULATE NORMAL HOURS
-    },
+	manual_checkin: function(frm, cdt, cdn){
+		var d = locals[cdt][cdn]; 
+		frm.events.add_manual_checkin(frm,d);
+	},
+	approved_hours(frm, cdt, cdn){
+		var d = locals[cdt][cdn]; 
+		frm.events.update_timesheet_detail(frm,d);
+	},
+	override_auto_break(frm, cdt, cdn){
+		var d = locals[cdt][cdn]; 
+		frm.events.update_timesheet_detail(frm,d);
+	},
 })

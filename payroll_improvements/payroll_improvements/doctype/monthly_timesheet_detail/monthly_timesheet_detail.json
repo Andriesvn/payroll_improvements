@@ -6,27 +6,32 @@
  "engine": "InnoDB",
  "field_order": [
   "date",
+  "attendance",
   "checkin",
   "checkout",
-  "lunch",
-  "normal_hours",
+  "breaks",
+  "actual_hours",
+  "approved_hours",
+  "leave",
+  "column_break_10",
+  "is_approved",
+  "notes",
+  "manual_checkin",
   "overtime_hours",
   "double_overtime_hours",
-  "leave",
-  "attendance",
-  "column_break_10",
-  "notes",
-  "is_approved",
-  "leave_status",
-  "leave_doc_status",
+  "public_hours",
   "shift_details_section",
   "shift",
-  "required_hours",
-  "max_break",
+  "shift_required_hours",
   "column_break_19",
+  "override_auto_break",
   "late_entry",
   "early_exit",
   "is_holiday",
+  "is_not_working",
+  "has_manual_checkin",
+  "unallowed_break",
+  "exceeded_break_time",
   "section_break_22",
   "punch_times"
  ],
@@ -46,7 +51,8 @@
    "fieldname": "checkin",
    "fieldtype": "Time",
    "in_list_view": 1,
-   "label": "Checkin Time"
+   "label": "Checkin Time",
+   "read_only": 1
   },
   {
    "columns": 1,
@@ -54,37 +60,25 @@
    "fieldname": "checkout",
    "fieldtype": "Time",
    "in_list_view": 1,
-   "label": "Checkout Time"
+   "label": "Checkout Time",
+   "read_only": 1
   },
   {
    "columns": 1,
-   "default": "00:00",
-   "fieldname": "lunch",
-   "fieldtype": "Time",
-   "in_list_view": 1,
-   "label": "Breaks"
-  },
-  {
-   "columns": 1,
-   "fieldname": "normal_hours",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Normal Hours",
-   "precision": "2"
-  },
-  {
-   "columns": 1,
+   "default": "0",
+   "depends_on": "eval:doc.overtime_hours!=0",
    "fieldname": "overtime_hours",
    "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "OT Hours"
+   "label": "OT Hours",
+   "read_only": 1
   },
   {
    "columns": 1,
+   "depends_on": "eval:doc.double_overtime_hours!=0",
    "fieldname": "double_overtime_hours",
    "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "DOT Hours"
+   "label": "DOT Hours",
+   "read_only": 1
   },
   {
    "columns": 1,
@@ -92,14 +86,16 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Leave Application",
-   "options": "Leave Application"
+   "options": "Leave Application",
+   "read_only_depends_on": "eval:doc.is_not_working || doc.is_approved"
   },
   {
-   "columns": 1,
+   "columns": 2,
    "fieldname": "notes",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Notes"
+   "label": "Notes",
+   "read_only_depends_on": "eval:doc.is_not_working || doc.is_approved"
   },
   {
    "default": "0",
@@ -112,29 +108,13 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "leave.status",
-   "fieldname": "leave_status",
-   "fieldtype": "Read Only",
-   "hidden": 1,
-   "label": "Leave Status",
-   "read_only": 1
-  },
-  {
-   "fetch_from": "leave.docstatus",
-   "fieldname": "leave_doc_status",
-   "fieldtype": "Read Only",
-   "hidden": 1,
-   "label": "Leave Doc Status",
-   "read_only": 1
-  },
-  {
    "columns": 1,
    "default": "Present",
    "fieldname": "attendance",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Attendance Status",
-   "options": "\nPresent\nAbsent\nOn Leave\nHalf Day\nHoliday\nMissed Clocking",
+   "options": "\nPresent\nNot Working\nAbsent\nOn Leave\nHalf Day\nPublic Holiday\nMissed Clocking",
    "read_only": 1
   },
   {
@@ -151,20 +131,7 @@
   },
   {
    "default": "0",
-   "fieldname": "required_hours",
-   "fieldtype": "Float",
-   "label": "Required Hours",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "max_break",
-   "fieldtype": "Float",
-   "label": "Max Break",
-   "read_only": 1
-  },
-  {
-   "default": "0",
+   "depends_on": "eval:doc.late_entry",
    "fieldname": "late_entry",
    "fieldtype": "Check",
    "label": "Late Entry",
@@ -172,6 +139,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.early_exit",
    "fieldname": "early_exit",
    "fieldtype": "Check",
    "label": "Early Exit",
@@ -179,6 +147,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.is_holiday",
    "fieldname": "is_holiday",
    "fieldtype": "Check",
    "label": "Is Holiday",
@@ -186,10 +155,12 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "eval:doc.punch_times",
    "fieldname": "section_break_22",
    "fieldtype": "Section Break"
   },
   {
+   "depends_on": "eval:doc.punch_times",
    "fieldname": "punch_times",
    "fieldtype": "Data",
    "label": "Punch Times",
@@ -198,11 +169,102 @@
   {
    "fieldname": "column_break_19",
    "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "default": "00:00",
+   "fieldname": "breaks",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Breaks",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "actual_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Actual Hours",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "approved_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Approved Hours",
+   "precision": "1",
+   "read_only_depends_on": "eval:doc.is_not_working || doc.is_approved || doc.actual_hours==0",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.public_hours!=0",
+   "fieldname": "public_hours",
+   "fieldtype": "Float",
+   "label": "Public Hours",
+   "precision": "1",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "override_auto_break",
+   "fieldtype": "Check",
+   "label": "Override Auto Break",
+   "read_only_depends_on": "eval:doc.is_not_working || doc.is_approved || doc.actual_hours==0 || doc.leave || !doc.shift"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.is_not_working",
+   "fieldname": "is_not_working",
+   "fieldtype": "Check",
+   "label": "Is Not Working",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.unallowed_break",
+   "fieldname": "unallowed_break",
+   "fieldtype": "Check",
+   "label": "Unallowed Break",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.exceeded_break_time",
+   "fieldname": "exceeded_break_time",
+   "fieldtype": "Check",
+   "label": "Break Time Exceeded",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.has_manual_checkin",
+   "fieldname": "has_manual_checkin",
+   "fieldtype": "Check",
+   "label": "Manual Check-in",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.shift",
+   "fieldname": "shift_required_hours",
+   "fieldtype": "Float",
+   "label": "Shift Required Hours",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:!doc.is_not_working && !doc.is_approved",
+   "fieldname": "manual_checkin",
+   "fieldtype": "Button",
+   "label": "Manual Checkin"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2022-03-16 17:15:26.984674",
+ "modified": "2022-03-30 12:12:21.603242",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Monthly Timesheet Detail",
