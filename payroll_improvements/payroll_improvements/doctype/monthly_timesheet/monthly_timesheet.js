@@ -130,7 +130,6 @@ frappe.ui.form.on('Monthly Timesheet', {
 		})
 	},
 	add_manual_checkin: function(frm,detail) {
-		console.log('adding Manual Checkin for detail:',detail);
 		var dialog = new frappe.ui.Dialog({
 			title: __('Add Manual Check-in'),
 			fields: [
@@ -189,7 +188,6 @@ frappe.ui.form.on('Monthly Timesheet', {
 		dialog.show();
 	},
 	update_timesheet_detail: function(frm,detail){
-		console.log('Timesheet Detail:', detail)
 		frappe.call({
 			doc: frm.doc,
 			method: 'update_timesheet_detail_from_ui',

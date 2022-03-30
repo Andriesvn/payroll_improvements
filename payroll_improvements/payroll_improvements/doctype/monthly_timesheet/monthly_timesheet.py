@@ -25,7 +25,6 @@ from erpnext.hr.doctype.holiday_list.holiday_list import is_holiday
 
 class MonthlyTimesheet(Document):
 	def autoname(self):
-		# select a project name based on customer
 		self.name = 'MTS:{0}-{1}-{2}'.format(self.employee,self.start_date,self.end_date)
 
 	def after_insert(self):
@@ -474,7 +473,6 @@ class MonthlyTimesheet(Document):
 
 	@frappe.whitelist()
 	def update_timesheet_detail_from_ui(self,row_name):
-		#debug
 		for detail in self.monthly_time_sheet_detail:
 			if detail.name == row_name:
 				self.validate_row(detail)
