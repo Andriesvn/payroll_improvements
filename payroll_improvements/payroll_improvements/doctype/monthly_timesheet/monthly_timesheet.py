@@ -369,8 +369,8 @@ class MonthlyTimesheet(Document):
 		#Check if Employee NOT Working()
 		shift = get_employee_shift(self.employee, for_date=parsed_date, consider_default_shift=(not detail.is_holiday))
 		
-		if default_employee_holiday_list_name != None:
-			date_is_not_working = is_holiday(default_employee_holiday_list_name, parsed_date)
+		#if default_employee_holiday_list_name != None:
+			#date_is_not_working = is_holiday(default_employee_holiday_list_name, parsed_date)
 		if shift != None:
 			detail.shift = shift.shift_type.name
 			detail._shift = shift.shift_type
@@ -380,9 +380,6 @@ class MonthlyTimesheet(Document):
 				detail.actual_hours = detail._shift.on_leave_hours
 				detail.approved_hours = detail._shift.on_leave_hours
 				detail.breaks = '00:00'
-						
-			if shift.shift_type.holiday_list != None and date_is_not_working == False:
-				date_is_not_working = is_holiday(shift.shift_type.holiday_list, parsed_date)
 		else:
 			detail.shift = None
 			detail.shift_required_hours = 0
@@ -536,7 +533,6 @@ def get_employee_shift(employee, for_date=None, consider_default_shift=False):
 			return get_shift_details(shift_type_name, for_date)	
 	
 	if shift_type_name:
-
 		holiday_list_name = frappe.db.get_value('Shift Type', shift_type_name, 'holiday_list')
 		if not holiday_list_name:
 			holiday_list_name = get_holiday_list_for_employee(employee, False)
