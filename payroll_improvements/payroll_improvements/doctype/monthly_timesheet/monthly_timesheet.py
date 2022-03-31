@@ -53,8 +53,9 @@ class MonthlyTimesheet(Document):
 	def validate_row(self, detail):
 		if detail.is_approved == 1:
 			self.overtime_must_have_reason(detail)
-			self.not_missed_clocking(detail)
+			self.not_missed_checkin(detail)
 			self.not_absent(detail)
+			self.not_no_shift(detail)
 			self.approved_hours_not_more_than_actual(detail)
 
 	def is_apporved(self, row):
@@ -68,16 +69,21 @@ class MonthlyTimesheet(Document):
 			frappe.throw(
 				_("Overtime must have a reason. Overtime on {0} does not have a reason").format(row.date)
 				)
-	def not_missed_clocking(self, row):
+	def not_missed_checkin(self, row):
 		if (row.checkin == row.checkout and row.checkin != '0:00:00') or (row.checkin != '0:00:00' and row.checkout == '0:00:00') \
-			or row.attendance == "Missed Clocking":
+			or row.attendance == "Missed Check-in":
 			frappe.throw(
-				_("Missed Clocking Not Allowed on {0}").format(row.date)
+				_("Missed Check-in Not Allowed. Missed Check-in found on {0}").format(row.date)
 				)
 	def not_absent(self, row):
 		if row.attendance == "Absent":
 			frappe.throw(
-				_("Absent Values Not Allowed on {0}").format(row.date)
+				_("Absent Values Not Allowed. Absent value found on {0}").format(row.date)
+				)
+	def not_no_shift(self, row):
+		if row.attendance == "No Shift":
+			frappe.throw(
+				_("No Shift Values Not Allowed. No Shift value found on {0}").format(row.date)
 				)
 	def approved_hours_not_more_than_actual(self, row):
 		if row.approved_hours > row.actual_hours:
@@ -285,13 +291,14 @@ class MonthlyTimesheet(Document):
 		if detail.is_holiday == 1 and detail.is_not_working == 1:
 			return 'Public Holiday'
 		if len(punch_logs) != 0 and len(punch_logs) % 2 != 0:
-			return "Missed Clocking"
+			return "Missed Check-in"
+		if detail.is_not_working and len(punch_logs) > 0:
+			return "No Shift"
 		if detail.shift != None and detail.shift.strip() != "" \
 		and detail.is_not_working == False \
 		and (detail.leave == None or detail.leave.strip() == "")\
 		and (detail.checkin == None or detail.checkin == "00:00" or detail.checkin == "00:00:00" or len(punch_logs) == 0):
 			return 'Absent'
-
 		return 'Present'
 
 
