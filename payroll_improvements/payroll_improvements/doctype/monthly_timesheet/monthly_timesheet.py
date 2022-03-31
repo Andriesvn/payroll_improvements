@@ -156,10 +156,9 @@ class MonthlyTimesheet(Document):
 			self.save()
 
 
-	def get_employee_checkin_for_range(self, start_date, end_date):
+	def get_employee_checkin_for_range(self, _start_date, _end_date):
 		filters = {
-			'time':('>=', start_date),
-			'time': ('<', getdate(end_date) + timedelta(days=1)),
+			'time': ['between', (_start_date, _end_date)],
 			'employee': self.employee
 		}
 		clockings = frappe.db.get_list('Employee Checkin', fields=["*"], filters=filters, order_by="time")
