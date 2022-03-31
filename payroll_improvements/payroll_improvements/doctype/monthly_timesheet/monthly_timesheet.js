@@ -78,7 +78,7 @@ frappe.ui.form.on('Monthly Timesheet', {
 			if (d.attendance){
 				if (["Present", "Work From Home"].includes(d.attendance)){
 					$(item).find("[data-fieldname='attendance']").css({'background-color': '#adffaa'});
-				} else if (["Absent","Missed Clocking"].includes(d.attendance)){
+				} else if (["Absent","Missed Check-in","No Shift"].includes(d.attendance)){
 					$(item).find("[data-fieldname='attendance']").css({'background-color': '#ff5858'});
 				} else if (["Half Day", "On Leave"].includes(d.attendance)){
 					$(item).find("[data-fieldname='attendance']").css({'background-color': '#ffa00a'});
@@ -103,7 +103,7 @@ frappe.ui.form.on('Monthly Timesheet', {
 			}
 			if (( (d.checkin == d.checkout) && (d.checkin != '0:00:00' && d.checkin != '00:00') ) || 
 			   ( (d.checkin != '0:00:00' && d.checkin != '00:00') && (d.checkout == '0:00:00' || d.checkout == '00:00')) ||
-			   ( d.attendance == "Missed Clocking")) {
+			   ( d.attendance == "Missed Check-in")) {
 					$(item).find("[data-fieldname='checkin']").css({'background-color': '#ff5858'});
 					$(item).find("[data-fieldname='checkout']").css({'background-color': '#ff5858'});
 			}
