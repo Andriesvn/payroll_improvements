@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-04-01 09:06:14.423276",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "mon",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Mon",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 1,
+   "fieldname": "tue",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tue",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 1,
+   "fieldname": "wed",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Wed",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 1,
+   "fieldname": "thu",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Thu",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 1,
+   "fieldname": "fri",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fri",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 2,
+   "fieldname": "sat",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sat",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 3,
+   "fieldname": "sun",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sun",
+   "options": "Shift Type"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2022-04-01 09:11:38.444330",
+ "modified_by": "Administrator",
+ "module": "Payroll Improvements",
+ "name": "Shift Pattern Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

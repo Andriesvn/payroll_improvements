@@ -18,7 +18,34 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Shift Management",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Shift Pattern",
+   "link_to": "Shift Pattern",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Shift Pattern Assignment",
+   "link_to": "Shift Pattern Assignement",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Attendance",
+   "link_to": "",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -42,7 +69,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-03-15 16:39:30.062743",
+ "modified": "2022-04-07 10:56:57.344159",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "HR Improved",
