@@ -105,9 +105,9 @@ scheduler_events = {
 # 	"all": [
 # 		"payroll_improvements.tasks.all"
 # 	],
-# 	"daily": [
-# 		"payroll_improvements.tasks.daily"
-# 	],
+ 	"daily": [
+ 		"payroll_improvements.utilities.shift_pattern_sheduler.create_auto_shift_pattern_assignements"
+ 	],
  	"hourly": [
  		"payroll_improvements.utilities.zk_clocking_sheduler.import_employee_clockings_since_last_sync"
  	],

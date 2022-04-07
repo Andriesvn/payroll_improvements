@@ -14,10 +14,12 @@
   "auto_assign",
   "auto_assign_section",
   "start_date",
-  "column_break_9",
-  "skip_public_holidays",
-  "column_break_11",
   "next_run_date",
+  "column_break_9",
+  "cycles_to_generate",
+  "last_end_date",
+  "column_break_11",
+  "skip_public_holidays",
   "shift_pattern_detail_section",
   "shift_pattern_details"
  ],
@@ -100,11 +102,24 @@
    "fieldname": "shift_pattern_details",
    "fieldtype": "Table",
    "options": "Shift Pattern Detail"
+  },
+  {
+   "default": "1",
+   "fieldname": "cycles_to_generate",
+   "fieldtype": "Int",
+   "label": "Cycles to Generate",
+   "mandatory_depends_on": "eval:doc.auto_assign"
+  },
+  {
+   "fieldname": "last_end_date",
+   "fieldtype": "Date",
+   "label": "Last End Date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-01 10:08:59.903262",
+ "modified": "2022-04-07 13:23:28.701500",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Shift Pattern",

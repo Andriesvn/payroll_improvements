@@ -6,8 +6,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_to_date
 from frappe.utils.data import getdate
+from frappe.utils import today
+from datetime import timedelta
 
-from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from payroll_improvements.utilities.helpers import is_holiday
 
 
@@ -15,7 +16,6 @@ class ShiftPattern(Document):
 	def validate(self):
 		cur_len = len(self.shift_pattern_details)
 		if cur_len != self.cycle:
-			print("Cycle Updated to:",self.cycle)
 			self.update_patern_details()
 
 
@@ -138,6 +138,59 @@ class ShiftPattern(Document):
 				public_holiday_list = frappe.get_doc('Holiday List', public_holiday_list_name)
 		return public_holiday_list
 
+	@frappe.whitelist()
+	def auto_generate_pattern(self):
+		# if the next run date is not less than today or inactive, dont do anything
+		# create_auto_shift_pattern_assignements()
+		if self.status != 'Active' or (self.next_run_date != None and self.next_run_date.strip() != "" and getdate(self.next_run_date) > getdate(today())):
+			return
+
+		date_from, date_to, next_run_date = self.get_auto_generate_dates()
+		employees = self.get_auto_generate_employees()
+		if employees == None or len(employees) <= 0:
+			self.build_shift_assignments_for_employees_by_date_range(date_from, date_to, employees, add_data = {
+				'auto_generated_shift_pattern': self.name
+			})
+			pass
+		self.next_run_date = next_run_date
+		self.last_end_date = date_to
+		self.save()
+
+	def get_auto_generate_employees(self):
+		filters = {
+			'auto_shift_pattern': self.name,
+			'status' : 'Active',
+		}
+		employees = frappe.db.get_list('Employee', fields=["name", "employee_name", "default_shift", "holiday_list","company","department"],
+		 filters=filters)
+		return employees
+
+	def get_auto_generate_dates(self):
+		cycle_days = self.cycle * 7
+		date_from = getdate(self.start_date) - timedelta(days=1)
+		date_to = getdate(today()) + timedelta(days=1)
+
+		if self.last_end_date != None and self.last_end_date.strip() != "":
+			date_from = getdate(self.last_end_date)
+			date_to = getdate(self.last_end_date) + timedelta(days=(cycle_days * self.cycles_to_generate))
+
+		days = (date_to - date_from).days
+		# need to complete the cycle first
+		extra_days_to_add = 0
+		if (days % cycle_days) != 0:
+			extra_days_to_add = cycle_days - (days % cycle_days)
+		total_days_to_add = extra_days_to_add + (cycle_days * self.cycles_to_generate)
+		if date_to <= getdate(today()):
+			date_to = date_to + timedelta(days=total_days_to_add)
+		
+		if ((date_to - (getdate(today()) + timedelta(days=cycle_days))).days + 1) < (cycle_days * self.cycles_to_generate):
+			date_to = date_to + timedelta(days=cycle_days)
+		next_run_date = date_to - timedelta(days=cycle_days)
+		#date_from has already been generated so we skip it
+		date_from = date_from + timedelta(days=1)
+		return date_from, date_to, next_run_date
+
+
 def save_shift_assinment(shift_assignment):
 	new_doc = frappe.get_doc(shift_assignment)
 	new_doc.insert()
@@ -149,6 +202,3 @@ def copy_shift_assignement(def_shift_assignment, shift_assignment):
 	cur_shift_assignement['start_date'] = shift_assignment['start_date']
 	cur_shift_assignement['end_date'] = shift_assignment['start_date']
 	return cur_shift_assignement
-
-
-
