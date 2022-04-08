@@ -1,0 +1,90 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2022-04-08 08:18:36.066499",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [
+  {
+   "fieldname": "date_from",
+   "fieldtype": "Date",
+   "label": "From",
+   "mandatory": 1,
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "date_to",
+   "fieldtype": "Date",
+   "label": "To",
+   "mandatory": 1,
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "mandatory": 1,
+   "options": "Company",
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "mandatory": 0,
+   "options": "Branch",
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "mandatory": 0,
+   "options": "Department",
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "mandatory": 0,
+   "options": "Designation",
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "grade",
+   "fieldtype": "Link",
+   "label": "Grade",
+   "mandatory": 0,
+   "options": "Employee Grade",
+   "wildcard_filter": 0
+  }
+ ],
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2022-04-08 08:18:36.066499",
+ "modified_by": "Administrator",
+ "module": "Payroll Improvements",
+ "name": "Working Schedule",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Employee",
+ "report_name": "Working Schedule",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Employee"
+  },
+  {
+   "role": "HR Manager"
+  },
+  {
+   "role": "HR User"
+  },
+  {
+   "role": "Employee Self Service"
+  }
+ ]
+}

@@ -1,0 +1,143 @@
+{
+ "actions": [],
+ "autoname": "prompt",
+ "creation": "2022-04-01 08:42:47.997723",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "unit",
+  "status",
+  "column_break_3",
+  "cycle",
+  "column_break_5",
+  "auto_assign",
+  "auto_assign_section",
+  "start_date",
+  "next_run_date",
+  "column_break_9",
+  "cycles_to_generate",
+  "last_end_date",
+  "column_break_11",
+  "skip_public_holidays",
+  "shift_pattern_detail_section",
+  "shift_pattern_details"
+ ],
+ "fields": [
+  {
+   "default": "Weeks",
+   "fieldname": "unit",
+   "fieldtype": "Select",
+   "label": "Unit",
+   "options": "Weeks",
+   "reqd": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "cycle",
+   "fieldtype": "Int",
+   "label": "Cycle",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_assign",
+   "fieldtype": "Check",
+   "label": "Auto Assign Shifts"
+  },
+  {
+   "depends_on": "eval:doc.auto_assign",
+   "fieldname": "auto_assign_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Starting Date",
+   "mandatory_depends_on": "eval:doc.auto_assign"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "next_run_date",
+   "fieldtype": "Date",
+   "label": "Next Run Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "skip_public_holidays",
+   "fieldtype": "Check",
+   "label": "Skip Public Holidays"
+  },
+  {
+   "fieldname": "shift_pattern_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Detail"
+  },
+  {
+   "fieldname": "shift_pattern_details",
+   "fieldtype": "Table",
+   "options": "Shift Pattern Detail"
+  },
+  {
+   "default": "1",
+   "fieldname": "cycles_to_generate",
+   "fieldtype": "Int",
+   "label": "Cycles to Generate",
+   "mandatory_depends_on": "eval:doc.auto_assign"
+  },
+  {
+   "fieldname": "last_end_date",
+   "fieldtype": "Date",
+   "label": "Last End Date",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-04-07 13:23:28.701500",
+ "modified_by": "Administrator",
+ "module": "Payroll Improvements",
+ "name": "Shift Pattern",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

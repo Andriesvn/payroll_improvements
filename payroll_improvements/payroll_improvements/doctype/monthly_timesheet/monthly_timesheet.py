@@ -8,11 +8,10 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils.dateutils import get_dates_from_timegrain
 from datetime import timedelta,datetime
-from frappe.utils.data import getdate
+from frappe.utils.data import getdate, nowdate
 from dateutil import parser
 import itertools
 import math
-import json
 from erpnext.hr.doctype.employee_checkin.employee_checkin import (
 	time_diff_in_hours,
 )
@@ -488,8 +487,6 @@ def get_shift_required_hours( shift):
 			shift_required_hours = shift_required_hours - (shift.allowed_break_time / 60)
 		return shift_required_hours
 
-def find_index_in_dict(dict_list, key, value):
-	return next((index for (index, d) in enumerate(dict_list) if d[key] == value), None)
 
 def is_valid_breaktime(start_time, end_time, break_times, break_times_type):
 	breaktime_valid = True
@@ -545,5 +542,6 @@ def get_employee_shift(employee, for_date=None, consider_default_shift=False):
 		if holiday_list_name and is_holiday(holiday_list_name, for_date):
 			shift_type_name = None
 	return get_shift_details(shift_type_name, for_date)
+
 
 
