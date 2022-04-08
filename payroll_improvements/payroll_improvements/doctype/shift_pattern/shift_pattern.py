@@ -182,7 +182,7 @@ class ShiftPattern(Document):
 		total_days_to_add = extra_days_to_add + (cycle_days * self.cycles_to_generate)
 		if date_to <= getdate(today()):
 			date_to = date_to + timedelta(days=total_days_to_add)
-		
+		# We need to stay ahead of the cycle by cycles_to_generate ammount 
 		if ((date_to - (getdate(today()) + timedelta(days=cycle_days))).days + 1) < (cycle_days * self.cycles_to_generate):
 			date_to = date_to + timedelta(days=cycle_days)
 		next_run_date = date_to - timedelta(days=cycle_days)
