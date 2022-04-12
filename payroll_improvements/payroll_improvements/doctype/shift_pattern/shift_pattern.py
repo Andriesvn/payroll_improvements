@@ -8,7 +8,6 @@ from frappe.utils import add_to_date
 from frappe.utils.data import getdate
 from frappe.utils import today
 from datetime import timedelta
-
 from payroll_improvements.utilities.helpers import is_holiday
 
 
@@ -142,16 +141,16 @@ class ShiftPattern(Document):
 	def auto_generate_pattern(self):
 		# if the next run date is not less than today or inactive, dont do anything
 		# create_auto_shift_pattern_assignements()
-		if self.status != 'Active' or (self.next_run_date != None and self.next_run_date.strip() != "" and getdate(self.next_run_date) > getdate(today())):
+		if self.status != 'Active' or (self.next_run_date != None and getdate(self.next_run_date) > getdate(today())):
 			return
 
 		date_from, date_to, next_run_date = self.get_auto_generate_dates()
 		employees = self.get_auto_generate_employees()
-		if employees == None or len(employees) <= 0:
+
+		if employees != None and len(employees) > 0:
 			self.build_shift_assignments_for_employees_by_date_range(date_from, date_to, employees, add_data = {
 				'auto_generated_shift_pattern': self.name
 			})
-			pass
 		self.next_run_date = next_run_date
 		self.last_end_date = date_to
 		self.save()
@@ -170,7 +169,7 @@ class ShiftPattern(Document):
 		date_from = getdate(self.start_date) - timedelta(days=1)
 		date_to = getdate(today()) + timedelta(days=1)
 
-		if self.last_end_date != None and self.last_end_date.strip() != "":
+		if self.last_end_date != None:
 			date_from = getdate(self.last_end_date)
 			date_to = getdate(self.last_end_date) + timedelta(days=(cycle_days * self.cycles_to_generate))
 
