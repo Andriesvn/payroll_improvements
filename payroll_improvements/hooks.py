@@ -177,3 +177,14 @@ user_data_fields = [
 override_doctype_class = {
 	'Salary Slip': 'payroll_improvements.overrides.imp_salary_slip.ImpSalarySlip'
 }
+
+jinja = {
+    "methods": [
+        "payroll_improvements.utilities.helpers.format_date_output",
+    ],
+}
+jenv = {
+	"methods": [
+		"format_date_output:payroll_improvements.utilities.helpers.format_date_output"
+	]
+}

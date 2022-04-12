@@ -20,6 +20,7 @@
   "overtime_hours",
   "double_overtime_hours",
   "public_hours",
+  "sys_notes",
   "shift_details_section",
   "shift",
   "shift_required_hours",
@@ -260,11 +261,17 @@
    "fieldname": "manual_checkin",
    "fieldtype": "Button",
    "label": "Manual Checkin"
+  },
+  {
+   "depends_on": "eval: doc.sys_notes",
+   "fieldname": "sys_notes",
+   "fieldtype": "Data",
+   "label": "System Notes"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2022-03-31 08:46:22.432970",
+ "modified": "2022-04-12 09:40:32.142089",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Monthly Timesheet Detail",

@@ -182,10 +182,12 @@ class MonthlyTimesheet(Document):
 	
 	def update_timesheet_detail(self, detail, punch_logs):
 		punch_times = []
+		sys_notes = []
 		for clocking in punch_logs:
 			punch_times.append(clocking.time.strftime("%d-%m-%Y %H:%M:%S"))
 		
-		total_working_hours, in_time, out_time, break_time, unallowed_break, flag_manual = self.calculate_working_hours(punch_logs, detail)
+		total_working_hours, in_time, out_time, break_time, unallowed_break, flag_manual, clock_notes = self.calculate_working_hours(punch_logs, detail)
+		sys_notes = sys_notes + clock_notes
 		# Calculate Attendance
 		detail.has_manual_checkin = flag_manual
 		detail.checkin = in_time.strftime('%H:%M:%S')
@@ -198,11 +200,14 @@ class MonthlyTimesheet(Document):
 			detail.breaks = str(timedelta(hours=break_time))
 			detail.exceeded_break_time = hasattr(detail, '_shift') and detail._shift != None and detail._shift.breaks_allowed == 1 \
 			and break_time > (detail._shift.allowed_break_time / 60)
-			detail.unallowed_break = unallowed_break or (hasattr(detail, '_shift') and detail._shift != None and detail._shift.breaks_allowed != 1)
+			detail.unallowed_break = unallowed_break
 		else:
 			detail.breaks = "00:00"
 			detail.exceeded_break_time = False
 			detail.unallowed_break = False
+		#add note for exceeded break:
+		if detail.exceeded_break_time:
+			sys_notes.append('EB:{0}'.format(detail.breaks))
 		#Calculate Approved Hours based on Shift Normal Time (end time - start time - allowed breaks)
 		if total_working_hours > 0 and hasattr(detail, '_shift') and detail._shift != None and detail.is_approved == 0:
 			is_on_leave = detail.leave != None and detail.leave.strip() != ""
@@ -220,7 +225,7 @@ class MonthlyTimesheet(Document):
 		#Double Check that Approved hours is not more than Actual
 		if detail.approved_hours > detail.actual_hours:
 			detail.approved_hours = detail.actual_hours
-
+		detail.sys_notes = ' '.join(sys_notes)
 		detail.punch_times = ' , '.join(punch_times)
 		detail.attendance = self.get_employee_attendance_value(detail, punch_logs)
 
@@ -234,9 +239,12 @@ class MonthlyTimesheet(Document):
 		break_time = 0
 		unallowed_break = False
 		flag_manual = False
+		clock_notes =[]
 		#check for manual check-ins:
 		for log in logs:
-			if hasattr(log, 'is_manual') and log.is_manual == 1:
+			if (hasattr(log, 'is_manual') and log.is_manual == 1) and (hasattr(detail, '_shift')\
+				and detail._shift != None and detail._shift.flag_manual_checkins == 1):
+				clock_notes.append('M:{0} {1}'.format(log.time.strftime("%H:%M"),log.notes))
 				flag_manual = True
 		
 		if len(logs) >= 2:
@@ -262,7 +270,10 @@ class MonthlyTimesheet(Document):
 				#TODO: Check if Break time is Allowed and within allowed Limits
 				if hasattr(detail, '_shift') and detail._shift != None and detail._shift.breaks_allowed \
 				   and detail._shift.break_times != None and len(detail._shift.break_times) > 0:
-					unallowed_break = not is_valid_breaktime(break_logs[0].time,break_logs[1].time,detail._shift.break_times,detail._shift.break_times_type)
+					unallowed_break = (not is_valid_breaktime(break_logs[0].time,break_logs[1].time,detail._shift.break_times,detail._shift.break_times_type)) \
+						or (hasattr(detail, '_shift') and detail._shift != None and detail._shift.breaks_allowed != 1)
+					if unallowed_break == True:
+						clock_notes.append('UB:{0}-{1}'.format(break_logs[0].time.strftime("%H:%M"),break_logs[1].time.strftime("%H:%M")))
 				del break_logs[:2]
 
 		if total_hours >= 0:
@@ -278,10 +289,8 @@ class MonthlyTimesheet(Document):
 				total_hours = total_hours - ((detail._shift.allowed_break_time / 60) - break_time)
 				break_time = (detail._shift.allowed_break_time / 60)
 				#else use the calculated one
-		if hasattr(detail, '_shift') and detail._shift != None and detail._shift.flag_manual_checkins == 0:
-			flag_manual = False
 		
-		return total_hours, in_time, out_time, break_time, unallowed_break, flag_manual
+		return total_hours, in_time, out_time, break_time, unallowed_break, flag_manual, clock_notes
 	
 	def get_employee_attendance_value(self, detail, punch_logs):
 		if detail.leave != None and detail.leave.strip() != "":
