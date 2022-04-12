@@ -1,4 +1,6 @@
+import frappe
 from frappe.utils import today
+from frappe.utils.data import getdate
 
 def find_index_in_dict(dict_list, key, value):
 	return next((index for (index, d) in enumerate(dict_list) if d.get(key) == value), None)
@@ -14,3 +16,10 @@ def is_holiday(holiday_list,date=None):
 	index_of_holiday = find_index_in_dict(holiday_list.holidays,'holiday_date',date)
 	return bool(index_of_holiday != None and index_of_holiday >= 0)
     
+@frappe.whitelist()
+def format_date_output(date,str):
+	fixed_date = getdate(date)
+	try:
+		return fixed_date.strftime(str) 
+	except:
+		return fixed_date.strftime("%Y-%m-%d") 

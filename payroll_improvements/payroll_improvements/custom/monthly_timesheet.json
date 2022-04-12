@@ -1,0 +1,32 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Monthly Timesheet",
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2022-04-12 10:50:27.440566",
+   "default_value": null,
+   "doc_type": "Monthly Timesheet",
+   "docstatus": 0,
+   "doctype_or_field": "DocType",
+   "field_name": null,
+   "idx": 0,
+   "modified": "2022-04-12 10:50:27.440566",
+   "modified_by": "Administrator",
+   "name": "Monthly Timesheet-main-default_print_format",
+   "owner": "Administrator",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "default_print_format",
+   "property_type": "Data",
+   "row_name": null,
+   "value": "Monthly Timesheet Printout"
+  }
+ ],
+ "sync_on_migrate": 1
+}

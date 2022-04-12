@@ -1,0 +1,165 @@
+{%- from "templates/print_formats/standard_macros.html" import add_header -%}
+<style>
+    .table-bordered td.top-bottom {
+        border-top: none !important;
+        border-bottom: none !important;
+    }
+
+    .table-bordered td.right {
+        border-right: none !important;
+    }
+
+    .table-bordered td.left {
+        border-left: none !important;
+    }
+</style>
+<div>
+    <header id="header-html">
+        {%- if not doc.get("print_heading") and not doc.get("select_print_heading")
+        and doc.set("select_print_heading", _("Monthly Timesheet")) -%}{%- endif -%}
+        {{ add_header(0, 1, doc, letter_head, no_letterhead, print_settings) }}
+
+        <div class="row section-break" data-label="">
+            <div class="col-xs-3 column-break">
+                <div class="row  data-field" data-fieldname="company" data-fieldtype="Read Only">
+                    <div class="col-xs-12">
+                        <label>{{_("Company")}}: </label>
+                    </div>
+                    <div class="col-xs-12 value">
+                        {{ doc.company }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 column-break">
+                <div class="row  data-field" data-fieldname="employee" data-fieldtype="Link">
+                    <div class="col-xs-12">
+                        <label>{{_("Employee")}}: </label>
+                    </div>
+                    <div class="col-xs-12 value">
+                        {{ doc.employee }} - {{ doc.employee_name }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 column-break">
+                <div class="row  data-field" data-fieldname="employee_name" data-fieldtype="Read Only">
+                    <div class="col-xs-12">
+                        <label>{{_("Date")}}: </label>
+                    </div>
+                    <div class="col-xs-12 value">
+                        {{ frappe.utils.format_date(doc.start_date) }} - {{ frappe.utils.format_date(doc.end_date) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div >
+        <table class="table table-bordered table-condensed">
+            <thead>
+                <tr>
+                    <th>{{_("Date")}}</th>
+                    <th>{{_("Status")}}</th>
+                    <th>{{_("Time in")}}</th>
+                    <th>{{_("Time out")}}</th>
+                    <th>{{_("Breaks")}}</th>
+                    <th>{{_("Actual")}}</th>
+                    <th>{{_("Approved")}}</th>
+                </tr>
+            </thead>
+            <tbody style="font-size: 11px;">
+                {% for detail in doc.monthly_time_sheet_detail %}
+                <tr>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table"><strong>{{ format_date_output(detail.date,"%a %d-%m-%y") }}</strong></td>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">{{ detail.attendance }}</td>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">{{ detail.checkin }}</td>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">{{ detail.checkout }}</td>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">{{ detail.breaks }}</td>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">{{ detail.actual_hours }}</td>
+                    <td data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">{{ detail.approved_hours }}</td>
+                </tr>
+                {% if detail.notes or detail.has_manual_checkin or detail.unallowed_break or detail.exceeded_break_time %}
+                    <tr data-fieldname="monthly_time_sheet_detail" data-fieldtype="Table">
+                        <td></td>
+                        <td colspan="6" style="text-align:center" >{{_("{0} {1}").format(detail.sys_notes,detail.notes).replace("None","")}}</td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    <div>
+    <div class="row section-break" data-label="Totals">
+        <div class="col-xs-1 column-break"></div>
+        <div class="col-xs-2 column-break">
+			<div class="row  data-field" data-fieldname="total_approved_hours" data-fieldtype="Float">
+				<div class="col-xs-12">
+					<label>{{_("Approved")}}: </label>	
+				</div>
+				<div class="col-xs-12 value">
+					{{ doc.total_approved_hours }}
+				</div>
+			</div>
+		</div>
+        <div class="col-xs-2 column-break">
+			<div class="row  data-field" data-fieldname="total_break_hours" data-fieldtype="Float">
+				<div class="col-xs-12">
+					<label>{{_("Breaks")}}: </label>	
+				</div>
+				<div class="col-xs-12 value">
+					{{ doc.total_break_hours }}
+				</div>
+			</div>
+		</div>
+        <div class="col-xs-2 column-break">
+			<div class="row  data-field" data-fieldname="total_overtime_hours" data-fieldtype="Float">
+				<div class="col-xs-12">
+					<label>{{_("Overtime")}}: </label>	
+				</div>
+				<div class="col-xs-12 value">
+					{{ doc.total_overtime_hours }}
+				</div>
+			</div>
+		</div>
+        <div class="col-xs-2 column-break">
+			<div class="row  data-field" data-fieldname="total_dot_hours" data-fieldtype="Float">
+				<div class="col-xs-12">
+					<label>{{_("DOT")}}: </label>	
+				</div>
+				<div class="col-xs-12 value">
+					{{ doc.total_dot_hours }}
+				</div>
+			</div>
+		</div>
+        <div class="col-xs-2 column-break">
+			<div class="row  data-field" data-fieldname="total_public_hours" data-fieldtype="Float">
+				<div class="col-xs-12">
+					<label>{{_("Public")}}: </label>	
+				</div>
+				<div class="col-xs-12 value">
+					{{ doc.total_public_hours }}
+				</div>
+			</div>
+		</div>
+        <div class="col-xs-1 column-break"></div>
+    </div>
+    <div class="row section-break" data-label="Signatures" style="margin-top: 30px">
+        <div class="col-xs-4 column-break">
+            <div>{{_("Manager")}}:_____________________</div>
+        </div>
+        <div class="col-xs-4 column-break">
+            <div>{{_("Employee")}}:_____________________</div>
+        </div>
+        <div class="col-xs-4 column-break">
+            <div>{{_("Date")}}:_____________________</div>
+        </div>
+    </div>
+    <div id="footer-html" class="visible-pdf" style="
+			display: block !important;
+			order: 1;
+			margin-top: auto;
+			padding-top: var(--padding-xl)
+		">
+		
+		<p class="text-center small page-number visible-pdf">
+			Status: {{ doc.status }} Page <span class="page"></span> of <span class="topage"></span>
+		</p>
+	</div>
+</div>

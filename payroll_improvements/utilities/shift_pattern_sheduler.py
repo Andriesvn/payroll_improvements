@@ -14,6 +14,5 @@ def create_auto_shift_pattern_assignements():
 	patterns = frappe.db.get_list('Shift Pattern', fields=['name','next_run_date','auto_assign'],filters=filters)
 	for pattern in patterns:
 			shift_pattern = frappe.get_doc('Shift Pattern', pattern.name)
-			print('Running Autogenerate for pattern:', pattern.name)
 			shift_pattern.auto_generate_pattern()
 
