@@ -120,7 +120,9 @@ class MonthlyTimesheet(Document):
 				"date": dt, 
 				"checkin": "00:00", 
 				"checkout": "00:00", 
-				"breaks": "00:00"
+				"breaks": "00:00",
+				"actual_hours": 0,
+				"approved_hours": 0,
 				})
 	
 	@frappe.whitelist()
