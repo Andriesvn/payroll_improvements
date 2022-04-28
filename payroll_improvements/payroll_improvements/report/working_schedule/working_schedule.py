@@ -6,7 +6,7 @@ from frappe import _
 from frappe.utils import date_diff
 from frappe.utils.dateutils import get_dates_from_timegrain
 from frappe.utils.data import get_timedelta
-from frappe.utils.data import getdate,nowdate
+from frappe.utils.data import nowdate
 import datetime
 from payroll_improvements.utilities.helpers import is_holiday
 
@@ -246,7 +246,6 @@ def get_shift_details(shift_type_name,shift_types):
 #Method extracted from Employee as all info is prefetched in this report and should not requery
 def get_holiday_list_for_employee(employee,companies):
 	if not employee.holiday_list:
-		holiday_list = None
 		for company in companies:
 			if company.name == employee.company:
 				return company.holiday_list	
