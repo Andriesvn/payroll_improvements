@@ -16,7 +16,7 @@ def execute(filters=None):
 	validate_filters(filters)
 	date_from, date_to = filters.get("date_from"), filters.get("date_to")
 	dates = get_dates_from_timegrain(date_from, date_to, "Daily")
-	columns = get_columns(filters,dates)
+	columns = get_columns(dates)
 	data = get_data(filters,dates)
 	return columns, data
 
@@ -166,6 +166,27 @@ def get_all_holiday_lists(employees, shift_types, companies):
 
 def get_employee_ids(emlpoyee_list):
 	return [d['name'] for d in emlpoyee_list]
+
+def get_columns(dates):
+	columns = [
+		{
+			"label": _("Employee"),
+			"fieldname": "employee_name",
+			"fieldtype": "Link",
+			"options": "Employee",
+			"width": 160
+		},
+	]
+	for date in dates:
+		columns.append(
+			{
+			"label": _("{}").format(date.strftime("%a %d-%m-%Y")),
+			"fieldname": date.strftime("%Y-%m-%d"),
+			"fieldtype": "Data",
+			"width": 100
+			},
+		)
+	return columns
 
 def get_time_str(timedelta_obj):
 	if isinstance(timedelta_obj, str):
