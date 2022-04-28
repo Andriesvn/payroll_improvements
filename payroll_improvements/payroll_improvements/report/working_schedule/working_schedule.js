@@ -79,15 +79,22 @@ frappe.query_reports["Working Schedule"] = {
 					
 		} else if (data && data[`_${column.fieldname}`] && data[`_${column.fieldname}`]['is_date'] ) {
 			shift_data = data[`_${column.fieldname}`]
-			if (shift_data.is_public_holiday && !shift_data.shift){
+			if (shift_data.is_public_holiday && !shift_data.shift && !shift_data.is_on_leave){
 				value=`<span class="bold" style="color: var(--text-on-blue)">${value}</span>`;
-			} else if (!shift_data.is_public_holiday && !shift_data.shift){
+			} else if (!shift_data.is_public_holiday && !shift_data.shift && !shift_data.is_on_leave){
 				value=`<span class="bold" style="color: var(--text-on-green)">${value}</span>`;
 			}
-			else if (shift_data.shift){
-				value= `<a href="/app/shift-type/${shift_data.shift.shift_type.name}"
+			else if (shift_data.shift && !shift_data.is_on_leave){
+				value= `<a href="/app/shift-type/${shift_data.shift.name}"
 					data-doctype="Shift Type"
-					data-name="${shift_data.shift.shift_type.name}">
+					data-name="${shift_data.shift.name}">
+					${value}</a>`
+			}
+			else if (shift_data.is_on_leave){
+				value= `<a href="/app/leave-application/${shift_data.leave_application.name}"
+					data-doctype="Leave Application"
+					data-name="${shift_data.leave_application.name}"
+					class="bold" style="color: var(--text-on-orange)">
 					${value}</a>`
 			}	
 		}
