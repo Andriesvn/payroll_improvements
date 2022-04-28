@@ -75,16 +75,13 @@ def get_employee_data(employee,dates,public_holiday_list, companies, shift_assig
 
 	for date in dates:
 		is_public_holiday = is_holiday(public_holiday_list,date)
-		#check if on leave
 		leave_application = list(filter(lambda leave_application: leave_application.employee == employee.name and date >= leave_application.from_date and date <= leave_application.to_date, 
 		leave_applications)) 
 		if len(leave_application) > 0:
 			leave_application = leave_application[0]
 		else:
 			leave_application = None
-		
 		shift = get_employee_shift(employee, shift_assignements, shift_types,companies,holiday_lists, for_date=date, consider_default_shift=(not is_public_holiday))
-		
 		date_data = {
 			'is_public_holiday': is_public_holiday,
 			'is_on_leave': (leave_application != None),
@@ -99,10 +96,8 @@ def get_employee_data(employee,dates,public_holiday_list, companies, shift_assig
 			date_value = '{0}-{1}'.format(get_time_str(shift.start_time),get_time_str(shift.end_time))
 		elif (leave_application != None):
 			date_value = leave_application.leave_type
-		print('date_value on date:',date,':',date_value)
 		data[date.strftime("%Y-%m-%d")] = date_value
 		data["_{0}".format(date.strftime("%Y-%m-%d"))] = date_data
-	#print('data:',data)
 	return data
 
 def get_employees(filters):
@@ -213,12 +208,10 @@ def get_employee_shift(employee, shift_assignements, shift_types, companies, hol
 		for_date = nowdate()
 	default_shift = employee.default_shift
 	shift_type_name = None
-	#shift_assignment_details = frappe.db.get_value('Shift Assignment', {'employee':employee, 'start_date':('>=', for_date),'end_date':('<=', for_date), 'docstatus': '1', 'status': "Active"}, ['shift_type', 'end_date'])
 	shift_assignment_details = list(filter(lambda shift_assignement: shift_assignement.employee == employee.name and shift_assignement.start_date >= for_date and shift_assignement.end_date <= for_date, 
 		shift_assignements)) 
 	
 	if len(shift_assignment_details) > 0:
-		#print('Shift Assignements=',shift_assignment_details)
 		shift_assignment_details = shift_assignment_details[0]
 		shift_type_name = shift_assignment_details.shift_type
 		# if end_date present means that shift is over after end_date else it is a ongoing shift.
