@@ -44,7 +44,6 @@ def get_data(filters,dates):
 	shift_types = get_shift_types(employees,shift_assignements)
 	#Fetch all Holiday Lists We will need
 	holiday_lists= get_all_holiday_lists(employees, shift_types, companies)
-	print('leave_applications',leave_applications)
 	data = []
 	for employee in employees:
 		data.append(
@@ -167,27 +166,6 @@ def get_all_holiday_lists(employees, shift_types, companies):
 
 def get_employee_ids(emlpoyee_list):
 	return [d['name'] for d in emlpoyee_list]
-
-def get_columns(filters, dates):
-	columns = [
-		{
-			"label": _("Employee"),
-			"fieldname": "employee_name",
-			"fieldtype": "Link",
-			"options": "Employee",
-			"width": 160
-		},
-	]
-	for date in dates:
-		columns.append(
-			{
-			"label": _("{}").format(date.strftime("%a %d-%m-%Y")),
-			"fieldname": date.strftime("%Y-%m-%d"),
-			"fieldtype": "Data",
-			"width": 100
-			},
-		)
-	return columns
 
 def get_time_str(timedelta_obj):
 	if isinstance(timedelta_obj, str):
