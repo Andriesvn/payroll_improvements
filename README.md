@@ -14,7 +14,7 @@ Improvements to Default Payroll and HR System in ERPNext v13
 6. Added Working Schedule report to show which employees are working on which date 
 
 #### Employee Check-ins:
-1. Ability to download employee check-ins from ZK Time Web 2 into ERPNext
+1. Ability to download employee check-ins from ZK BioTime 8 into ERPNext
 2. Separate Downloaded Check-ins from Manually Added Check-ins to be flagged in Timesheet
 
 #### Holiday Lists:
@@ -31,9 +31,8 @@ Improvements to Default Payroll and HR System in ERPNext v13
 
 
 ## Features Planned:
-1. Ability to download employee check-ins from ZK BioTime 8 into ERPNext
-2. Overtime needs to be preapproved otherwise flagged
-3. Account for shifts spanning multiple days (Night Shift)
+1. Overtime needs to be preapproved otherwise flagged
+2. Account for shifts spanning multiple days (Night Shift)
 
 
 #### License
