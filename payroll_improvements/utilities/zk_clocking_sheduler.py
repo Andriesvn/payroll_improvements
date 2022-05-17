@@ -13,7 +13,6 @@ def insert_employee_clockings_from_zk_based_on_employee_field(employee_name,star
     else:
         frappe.throw(_("Employee not found. 'name': {}").format(employee_name))
     
-    #print('Employee Found:', employee)
     pid = employee.get(employee_fieldname)
     if pid == None or pid.strip() == "":
         if employee.employee_number == None or employee.employee_number.strip() == "":
@@ -23,12 +22,10 @@ def insert_employee_clockings_from_zk_based_on_employee_field(employee_name,star
     
      
     clockings = get_employees_clockings_from_zk([pid], start_date,end_date)
-    #print('Employee Clockings:',clockings)
     insert_employee_checkins(clockings)
 
 def get_employee_clockings_from_zk(pid,start_date,end_date):
     clockings = get_employees_clockings_from_zk([pid], start_date,end_date)
-    #print('Employee Clockings:',clockings)
     return clockings
 
 def insert_employee_checkins(clockings, update_last_sync=False, last_sync_id=0):
@@ -45,7 +42,6 @@ def insert_employee_checkins(clockings, update_last_sync=False, last_sync_id=0):
     
 
     for clocking in clockings:
-        #print('Adding Clocking for ', clocking['employee'])
         if clocking['id'] > max_sync_id:
             max_sync_id = clocking['id']
         #extra bit of protection to try to prevent duplicates
@@ -60,25 +56,20 @@ def insert_employee_checkins(clockings, update_last_sync=False, last_sync_id=0):
                 )
             except:
                 pass
-    #print('Max Sync ID ', max_sync_id)
     if update_last_sync and max_sync_id > last_sync_id:
         frappe.db.set_single_value('HR Settings', 'last_sync_id', max_sync_id)
-        #print('HR Settings Updated')
 
 
 def get_employees_clockings_from_zk(pids,start_date,end_date):
     hr_settings = frappe.get_single('HR Settings')
     strPassword = hr_settings.get_password('zk_password')
-    #print('password=',strPassword)
     zkdb = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
     cursor = zkdb.cursor()
 
-    sql = "select id, pin, checktime, checktype, sn_name\
-            from checkinout\
-            where pin in (%s) and checktime>='%s' and checktime<='%s'\
-            order by checktime" \
+    sql = "select id, emp_code `pin`, punch_time `checktime`, punch_state `checktype`, terminal_sn `sn_name` From iclock_transaction\
+           where emp_code in (%s) and punch_time>='%s' and punch_time<='%s'\
+           order by punch_time" \
             % (','.join(pids), formatdate(start_date, 'yyyy-mm-dd'),formatdate(end_date, 'yyyy-mm-dd'))
-    #print(sql)
     results = None
     try:
         cursor.execute(sql)
@@ -127,7 +118,6 @@ def import_employee_clockings_since_last_sync():
     if employees == None or len(employees) == 0:
         return
     clockings ,last_sync_id = get_employees_clockings_from_zk_since_last_sync(employees)
-    #print('Recieved Last sync back from get_employees_clockings:',last_sync_id)
     if clockings == None or len(clockings) == 0:
         return
     insert_employee_checkins(clockings, update_last_sync=True, last_sync_id=last_sync_id)
@@ -155,24 +145,17 @@ def get_employees_clockings_from_zk_since_last_sync(pids):
          frappe.throw(_("ZK Password not Set"))
 
     if hr_settings.last_sync_id == None or hr_settings.last_sync_id.strip() == "" or hr_settings.last_sync_id.strip() == "0" or hr_settings.last_sync_id == 0:
-        #print('Getting Clockings Last Sync ID')
         hr_settings.last_sync_id = get_lowest_sync_id_from_date(hr_settings, strPassword)
-        #hr_settings.last_sync_id = 3258936
         if hr_settings.last_sync_id == None:
             frappe.throw(_("Could not Determine the Sync ID to use"))
     
-    #print('Last Sync ID to Use:',hr_settings.last_sync_id)
-    
-    #print('password=',strPassword)
     zkdb = pymysql.connect(host=hr_settings.zk_host,user=hr_settings.zk_user,password=strPassword,database=hr_settings.zk_database, cursorclass=pymysql.cursors.DictCursor)
     cursor = zkdb.cursor()
 
-    sql = "select id, pin, checktime, checktype, sn_name\
-            from checkinout\
-            where id > %s and pin in (%s)\
-            order by checktime" \
-            % (hr_settings.last_sync_id,','.join(pids),)
-    #print(sql)
+    sql = "select id, emp_code `pin`, punch_time `checktime`, punch_state `checktype`, terminal_sn `sn_name` From iclock_transaction\
+           where id > %s and emp_code in (%s)\
+           order by punch_time" \
+           % (hr_settings.last_sync_id,','.join(pids),)
     results = None
     try:
         cursor.execute(sql)
@@ -195,11 +178,10 @@ def get_lowest_sync_id_from_date(hr_settings, strPassword):
     cursor = zkdb.cursor()
 
     sql = "select Max(id)\
-            from checkinout\
-            where checktime < '%s' \
+            from iclock_transaction\
+            where punch_time < '%s' \
             " \
             % (formatdate(hr_settings.import_after_date, 'yyyy-mm-dd'))
-    #print(sql)
     results = None
     try:
         cursor.execute(sql)
