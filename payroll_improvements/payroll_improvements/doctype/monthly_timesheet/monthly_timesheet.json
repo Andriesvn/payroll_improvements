@@ -220,7 +220,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2022-03-23 14:12:14.320143",
+ "modified": "2022-05-19 14:01:58.726721",
  "modified_by": "Administrator",
  "module": "Payroll Improvements",
  "name": "Monthly Timesheet",
@@ -274,6 +274,24 @@
    "role": "Leave Approver",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee Self Service",
+   "share": 1
   }
  ],
  "search_fields": "company,department,employee",
