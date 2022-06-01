@@ -246,7 +246,10 @@ class MonthlyTimesheet(Document):
 		for log in logs:
 			if (hasattr(log, 'is_manual') and log.is_manual == 1) and (hasattr(detail, '_shift')\
 				and detail._shift != None and detail._shift.flag_manual_checkins == 1):
-				clock_notes.append('M:{0} {1}'.format(log.time.strftime("%H:%M"),log.notes))
+				_notes = log.reason
+				if (log.notes != None and log.notes != ''):
+					_notes = '{0}:{1}'.format(_notes, log.notes)
+				clock_notes.append('M:{0} {1}'.format(log.time.strftime("%H:%M"),_notes))
 				flag_manual = True
 		
 		if len(logs) >= 2:
@@ -470,7 +473,7 @@ class MonthlyTimesheet(Document):
 		detail.public_hours = ph
 
 	@frappe.whitelist()
-	def add_manual_checkin(self,date,time,log_type,reason):
+	def add_manual_checkin(self,date,time,log_type,reason,notes=None):
 		# Add manual Check-in
 		doc = frappe.new_doc("Employee Checkin")
 		doc.employee = self.employee
@@ -479,7 +482,8 @@ class MonthlyTimesheet(Document):
 		doc.time = date + ' ' + time
 		doc.log_type = log_type
 		doc.skip_auto_attendance = 0
-		doc.notes = reason
+		doc.reason = reason
+		doc.notes = notes
 		doc.insert()
 		# Refech clockings for that date and recalculate
 		self.get_employee_clockings_for_specific_date(date)
