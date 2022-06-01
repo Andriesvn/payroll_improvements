@@ -159,13 +159,38 @@ frappe.ui.form.on('Monthly Timesheet', {
 				{
 					label: __('Reason'),
 					fieldname: 'reason',
+					fieldtype: 'Link',
+					options:"Employee Manual Checkin Reason",
+					reqd: 1,
+					change: () => {
+						let checkin_reason = dialog.get_value('reason');
+						if (checkin_reason && checkin_reason != "") {
+							frappe.db.get_doc("Employee Manual Checkin Reason", checkin_reason).then((reason) => {
+								dialog.set_df_property('notes', 'reqd', reason.notes_required )
+								dialog.set_df_property('notes', 'reqd', reason.notes_required )
+								if (reason.notes_required){
+									//Does not seem to work with Hidden
+									dialog.set_df_property('notes', 'read_only', 0)
+								} else {
+									dialog.set_value("notes", "");
+									//Does not seem to work with Hidden
+									dialog.set_df_property('notes', 'read_only', 1)
+								}	
+							})	
+						}
+					}
+				},
+				{fieldtype: 'Section Break',},
+				{
+					label: __('Notes'),
+					fieldname: 'notes',
 					fieldtype: 'Data',
-					reqd: 1
-				}
+					//Does not seem to work with Hidden
+					read_only: 1,
+				},
 			],
 			primary_action_label: __('Submit'),
 			primary_action(values) {
-				console.log(values);
 				frappe.call({
 					doc: frm.doc,
 					method: 'add_manual_checkin',
@@ -174,6 +199,7 @@ frappe.ui.form.on('Monthly Timesheet', {
 						time: values.time,
 						log_type: values.log_type,
 						reason: values.reason,
+						notes: values.notes,
 					},
 					callback: function(r) {
 						dialog.hide();
@@ -185,6 +211,7 @@ frappe.ui.form.on('Monthly Timesheet', {
 			}
 		});
 		dialog.set_value("date", detail.date);
+		dialog.set_value("notes", "");
 		dialog.show();
 	},
 	update_timesheet_detail: function(frm,detail){
