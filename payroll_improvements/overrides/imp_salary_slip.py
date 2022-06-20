@@ -30,20 +30,20 @@ class ImpSalarySlip(SalarySlip):
 		#Now get the New timesheet too
 		super(ImpSalarySlip, self).set_time_sheet()
 		#TODO: REWRITE USING frappe.qb instead
-		monthly_timesheet = frappe.db.sql("""Select TS.`name`, TS.`total_normal_hours`, TS.`total_overtime_hours`, TS.`total_dot_hours`, TS.`total_lunch_hours`, TS.`required_hours`, TP.`payroll_date` \
-			FROM `tabMonthly Timesheet` as TS \
-			LEFT OUTER JOIN `tabTimesheet Period` As TP on (TS.`timesheet_period` = TP.`name`)
-			Where TS.`employee` = %(employee)s and TP.`payroll_date` BETWEEN %(start_date)s AND %(end_date)s \
-			AND TS.status = 'Approved' and TS.docstatus = 1""", 
-			{'employee': self.employee, 'start_date': self.start_date, 'end_date': self.end_date}, as_dict=1)
+		#monthly_timesheet = frappe.db.sql("""Select TS.`name`, TS.`total_normal_hours`, TS.`total_overtime_hours`, TS.`total_dot_hours`, TS.`total_lunch_hours`, TS.`required_hours`, TP.`payroll_date` \
+		#	FROM `tabMonthly Timesheet` as TS \
+		#	LEFT OUTER JOIN `tabTimesheet Period` As TP on (TS.`timesheet_period` = TP.`name`)
+		#	Where TS.`employee` = %(employee)s and TP.`payroll_date` BETWEEN %(start_date)s AND %(end_date)s \
+		#	AND TS.status = 'Approved' and TS.docstatus = 1""", 
+		#	{'employee': self.employee, 'start_date': self.start_date, 'end_date': self.end_date}, as_dict=1)
 		
-		if monthly_timesheet != None and len(monthly_timesheet) > 0:
-			monthly_timesheet = monthly_timesheet[0]
-			self.monthly_timesheet = monthly_timesheet['name']
-			self.total_normal_hours = monthly_timesheet['total_normal_hours']
-			self.total_overtime_hours = monthly_timesheet['total_overtime_hours']
-			self.total_double_overtime_hours = monthly_timesheet['total_dot_hours']
-			self.total_lunch_hours = monthly_timesheet['total_lunch_hours']
+		#if monthly_timesheet != None and len(monthly_timesheet) > 0:
+		#	monthly_timesheet = monthly_timesheet[0]
+		#	self.monthly_timesheet = monthly_timesheet['name']
+		#	self.total_normal_hours = monthly_timesheet['total_normal_hours']
+		#	self.total_overtime_hours = monthly_timesheet['total_overtime_hours']
+		#	self.total_double_overtime_hours = monthly_timesheet['total_dot_hours']
+		#	self.total_lunch_hours = monthly_timesheet['total_lunch_hours']
 	
 	#Add Salary Structure Assignment components
 	def add_assignment_structure_components(self, component_type):
